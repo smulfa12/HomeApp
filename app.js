@@ -9,6 +9,7 @@
 import { createRouter } from './service/router.service.js';
 import { initData, needsLogin } from './service/sync.service.js';
 import { isUserBusy } from './service/ui.service.js';
+import { enableAutoUpdate } from './service/update.service.js';
 
 // Login, beranda & pengaturan
 import login from './program/login.js';
@@ -58,6 +59,5 @@ MODULES.forEach((m) => router.register(m));
 await initData({ onRemoteChange: () => router.refreshInBackground(isUserBusy) });
 router.start();
 
-if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
-}
+// Mode offline + update otomatis ke versi terbaru
+enableAutoUpdate();
