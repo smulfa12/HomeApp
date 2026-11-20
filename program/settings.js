@@ -7,6 +7,7 @@ import { loadDemoData } from '../service/demo.service.js';
 import { today } from '../service/format.service.js';
 import { syncState, onSyncChange, syncNow, logout } from '../service/sync.service.js';
 import { navigate } from '../service/router.service.js';
+import { APP_VERSION } from '../service/version.service.js';
 
 const STATUS = {
   synced: ['ok', '✅ Tersinkron'],
@@ -64,7 +65,7 @@ export default {
         <h2>📱 Pasang di HP</h2>
         <p class="small muted">Android (Chrome): menu ⋮ → <b>Tambahkan ke layar utama</b>.<br/>iPhone (Safari): tombol Bagikan → <b>Add to Home Screen</b>.</p>
       </section>
-      <p class="muted small center">Rumahku v1.1 · dibuat dengan 💜</p>`;
+      <p class="muted small center">Rumahku ${APP_VERSION} · dibuat dengan 💜</p>`;
 
     const dbBox = el.querySelector('[data-db]');
     const bindDb = () => {
