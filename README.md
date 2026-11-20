@@ -24,6 +24,7 @@ Bisa dipasang ke layar utama HP dan tetap jalan tanpa internet (kecuali scan not
 | 4 | **Data Pemasukan** | Sama seperti di atas untuk pemasukan. |
 | 5 | **Neraca & Laba Rugi** | Laba rugi per periode (surplus/defisit, rasio tabungan) dan neraca (aset − hutang = kekayaan bersih, rasio hutang). |
 | 6 | **Budget & Realisasi** | Budget per kategori per bulan, progres realisasi, status over budget, salin budget bulan lalu. |
+| 7 | **Transfer** | Pindah saldo antar dompet/rekening, bayar hutang/kartu kredit, pakai paylater; biaya admin dicatat sebagai pengeluaran. Tidak dihitung sebagai pemasukan/pengeluaran. |
 
 Tambahan: **Login**, **Dompet & Rekening** (menu Atur: tambah dompet, bank, e-wallet, tabungan, emas, piutang, hutang, paylater; ikon, nomor rekening, arsip) (dompet, bank, e-wallet, tabungan, aset tetap, hutang) sebagai sumber neraca, dan **Pengaturan** (backup/restore JSON, isi data contoh, hapus data).
 
@@ -114,6 +115,7 @@ Jalankan file yang belum pernah dijalankan, berurutan, di **SQL Editor** Supabas
 |---|---|
 | `schema.sql` | skema awal (sudah termasuk semua migrasi; untuk project baru) |
 | `002_akun_uang.sql` | ikon, nomor rekening, catatan & arsip untuk dompet/rekening |
+| `003_transfer.sql` | transfer antar dompet / rekening (+ biaya admin) |
 
 Kalau aplikasi versi baru dipakai sebelum SQL-nya dijalankan, perubahan tetap aman tersimpan di HP
 (menu Atur menampilkan pesan "Database perlu diperbarui") dan otomatis terkirim setelah SQL dijalankan.

@@ -12,6 +12,8 @@ const MENUS = [
   { href: '#/finance/laporan-pemasukan', emoji: '📈', title: 'Data Pemasukan', desc: 'Per periode', tone: 'sky' },
   { href: '#/finance/neraca', emoji: '⚖️', title: 'Neraca & Laba Rugi', desc: 'Kesehatan keuangan', tone: 'lavender' },
   { href: '#/finance/budget', emoji: '🎯', title: 'Budget & Realisasi', desc: 'Rencana vs aktual', tone: 'butter' },
+  { href: '#/finance/transfer', emoji: '🔁', title: 'Transfer', desc: 'Antar dompet & rekening', tone: 'sky' },
+  { href: '#/finance/akun', emoji: '💳', title: 'Dompet & Rekening', desc: 'Atur tempat uang', tone: 'mint' },
 ];
 
 export default {
@@ -51,7 +53,6 @@ export default {
           </a>`
         ).join('')}
       </section>
-
-      <a class="link-card" href="#/finance/akun">💳 Dompet, rekening & hutang <span>›</span></a>`;
+`;
   },
 };

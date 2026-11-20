@@ -17,7 +17,7 @@ export function createReportPage({ path, type, title, emoji, tone, addHref }) {
         <div data-content></div>`;
 
       const content = el.querySelector('[data-content]');
-      const accounts = Object.fromEntries(fin.listAccounts().map((a) => [a.id, a.name]));
+      const accounts = Object.fromEntries(fin.listAccounts(null, { includeArchived: true }).map((a) => [a.id, a.name]));
       let range;
 
       const draw = () => {

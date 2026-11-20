@@ -24,7 +24,7 @@ export const TABLES = {
   },
   'fin.transactions': {
     table: 'fin_transactions',
-    columns: ['id', 'type', 'amount', 'category', 'accountId', 'date', 'note', 'source', 'createdAt', 'updatedAt'],
+    columns: ['id', 'type', 'amount', 'category', 'accountId', 'toAccountId', 'refId', 'date', 'note', 'source', 'createdAt', 'updatedAt'],
   },
 };
 
