@@ -3,10 +3,15 @@
  * Hash router kecil: "#/inventory/input?id=xxx".
  * Setiap modul program mendaftarkan { path, render } dan router
  * yang memanggil render() saat URL berubah.
+ *
+ * Opsi modul:
+ *  - autoRefresh: false → halaman tidak di-render ulang otomatis saat
+ *    ada data baru dari HP lain (dipakai halaman form supaya isian tidak hilang).
  */
-export function createRouter({ outlet, notFound = '/', onNavigate = () => {} }) {
+export function createRouter({ outlet, notFound = '/', onNavigate = () => {}, guard = () => null }) {
   const routes = new Map();
   let cleanup = null;
+  let current = null;
 
   function parse() {
     const hash = location.hash.replace(/^#/, '') || '/';
@@ -14,22 +19,28 @@ export function createRouter({ outlet, notFound = '/', onNavigate = () => {} }) 
     return { path, params: Object.fromEntries(new URLSearchParams(query)) };
   }
 
-  async function resolve() {
+  async function resolve({ keepScroll = false } = {}) {
     const { path, params } = parse();
+    const redirect = guard(path);
+    if (redirect && redirect !== path) {
+      location.hash = '#' + redirect;
+      return;
+    }
     const mod = routes.get(path) || routes.get(notFound);
+    const scrollY = window.scrollY;
     if (typeof cleanup === 'function') {
       try { await cleanup(); } catch { /* abaikan */ }
     }
     cleanup = null;
+    current = mod;
     outlet.innerHTML = '';
-    outlet.scrollTop = 0;
-    window.scrollTo(0, 0);
     const view = document.createElement('div');
-    view.className = 'view';
+    view.className = 'view' + (keepScroll ? ' view--still' : '');
     outlet.appendChild(view);
     if (mod.title) document.title = `${mod.title} · Rumahku`;
     onNavigate(path, mod);
     cleanup = await mod.render(view, params);
+    window.scrollTo(0, keepScroll ? scrollY : 0);
   }
 
   return {
@@ -38,10 +49,15 @@ export function createRouter({ outlet, notFound = '/', onNavigate = () => {} }) 
       return this;
     },
     start() {
-      window.addEventListener('hashchange', resolve);
+      window.addEventListener('hashchange', () => resolve());
       resolve();
     },
-    refresh: resolve,
+    refresh: () => resolve(),
+    /** Render ulang halaman aktif di latar belakang (data baru dari server). */
+    refreshInBackground(isBusy = () => false) {
+      if (!current || current.autoRefresh === false || isBusy()) return;
+      resolve({ keepScroll: true });
+    },
   };
 }
 

@@ -1,9 +1,17 @@
 /**
  * Storage Service
- * Wrapper sederhana di atas localStorage. Semua data aplikasi disimpan
- * dengan prefix "homeapp." supaya tidak bentrok dengan aplikasi lain.
+ * Cache data lokal di HP (localStorage). Semua menu membaca dari sini
+ * supaya aplikasi tetap cepat dan bisa dipakai offline.
+ *
+ * Setiap perubahan dilaporkan lewat "sync hook" — sync.service.js memakai
+ * hook ini untuk mengirim perubahan ke database Supabase.
  */
 const PREFIX = 'homeapp.';
+
+let syncHook = null;
+/** Dipasang oleh sync.service.js. op = {kind:'upsert'|'delete'|'replace'|'clear', key, row?, id?, value?} */
+export const setSyncHook = (fn) => (syncHook = fn);
+const notify = (op) => syncHook && syncHook(op);
 
 export function load(key, fallback) {
   try {
@@ -14,7 +22,7 @@ export function load(key, fallback) {
   }
 }
 
-export function save(key, value) {
+function writeRaw(key, value) {
   try {
     localStorage.setItem(PREFIX + key, JSON.stringify(value));
     return true;
@@ -22,6 +30,13 @@ export function save(key, value) {
     console.error('Gagal menyimpan data', err);
     return false;
   }
+}
+
+/** Simpan nilai (pengaturan). `silent` = jangan kirim ke database (dipakai saat menerima data dari server). */
+export function save(key, value, { silent = false } = {}) {
+  const ok = writeRaw(key, value);
+  if (ok && !silent) notify({ kind: 'replace', key, value });
+  return ok;
 }
 
 export function uid() {
@@ -33,7 +48,7 @@ export function uid() {
  */
 export function collection(name) {
   const read = () => load(name, []);
-  const write = (rows) => save(name, rows);
+  const write = (rows) => writeRaw(name, rows);
 
   return {
     all: () => read(),
@@ -46,6 +61,7 @@ export function collection(name) {
       const row = { id: uid(), createdAt: now, updatedAt: now, ...obj };
       rows.push(row);
       write(rows);
+      notify({ kind: 'upsert', key: name, row });
       return row;
     },
     update(id, patch) {
@@ -54,12 +70,23 @@ export function collection(name) {
       if (idx < 0) return null;
       rows[idx] = { ...rows[idx], ...patch, updatedAt: new Date().toISOString() };
       write(rows);
+      notify({ kind: 'upsert', key: name, row: rows[idx] });
       return rows[idx];
     },
     remove(id) {
       write(read().filter((r) => r.id !== id));
+      notify({ kind: 'delete', key: name, id });
     },
-    replaceAll: (rows) => write(rows),
+    replaceAll(rows, { silent = false } = {}) {
+      write(rows);
+      if (!silent) notify({ kind: 'replace', key: name, value: rows });
+    },
+    /** Terapkan perubahan dari server tanpa mengirim balik. */
+    applyRemote(row, deleted = false) {
+      const rows = read().filter((r) => r.id !== row.id);
+      if (!deleted) rows.push(row);
+      write(rows);
+    },
   };
 }
 
@@ -79,8 +106,19 @@ export function importAll(payload) {
   Object.entries(payload.data).forEach(([k, v]) => save(k, v));
 }
 
-export function clearAll() {
+export function clearAll({ silent = false } = {}) {
   Object.keys(localStorage)
     .filter((k) => k.startsWith(PREFIX))
     .forEach((k) => localStorage.removeItem(k));
+  if (!silent) notify({ kind: 'clear' });
+}
+
+/** Hapus satu key dari cache lokal tanpa mengirim ke database. */
+export function removeLocal(key) {
+  localStorage.removeItem(PREFIX + key);
+}
+
+/** Apakah ada data lokal (untuk migrasi pertama kali ke database). */
+export function hasLocalData() {
+  return Object.keys(localStorage).some((k) => k.startsWith(PREFIX));
 }

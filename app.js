@@ -7,8 +7,11 @@
  * ============================================================
  */
 import { createRouter } from './service/router.service.js';
+import { initData, needsLogin } from './service/sync.service.js';
+import { isUserBusy } from './service/ui.service.js';
 
-// Beranda & pengaturan
+// Login, beranda & pengaturan
+import login from './program/login.js';
 import home from './program/home.js';
 import settings from './program/settings.js';
 
@@ -31,19 +34,27 @@ import budget from './program/finance/budget.js';
 import akun from './program/finance/akun.js';
 
 const MODULES = [
-  home, settings,
+  login, home, settings,
   inventoryMenu, inputBarang, stockKeluar, stockOpname, daftarBelanja, barangLokasi,
   financeMenu, inputIncome, inputExpense, laporanPengeluaran, laporanPemasukan, neracaLabaRugi, budget, akun,
 ];
 
 /** Tandai tab navigasi bawah yang aktif sesuai halaman. */
 function highlightNav(path) {
+  document.body.classList.toggle('auth-page', path === '/login');
   const section = path.startsWith('/inventory') ? 'inventory' : path.startsWith('/finance') ? 'finance' : path.startsWith('/settings') ? 'settings' : 'home';
   document.querySelectorAll('.tabbar a').forEach((a) => a.classList.toggle('on', a.dataset.tab === section));
 }
 
-const router = createRouter({ outlet: document.getElementById('app'), onNavigate: highlightNav });
+const router = createRouter({
+  outlet: document.getElementById('app'),
+  onNavigate: highlightNav,
+  guard: (path) => (needsLogin() ? '/login' : path === '/login' ? '/' : null),
+});
 MODULES.forEach((m) => router.register(m));
+
+// Siapkan database (Supabase) lalu tampilkan halaman pertama
+await initData({ onRemoteChange: () => router.refreshInBackground(isUserBusy) });
 router.start();
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {

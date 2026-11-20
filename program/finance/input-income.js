@@ -9,6 +9,7 @@ import { transactionFormHtml, bindTransactionForm } from '../shared/transaction-
 export default {
   path: '/finance/income',
   title: 'Input Income',
+  autoRefresh: false, // halaman form: jangan di-render ulang saat ada data baru
   render(el) {
     const draw = () => {
       const recent = fin.listTransactions({ type: 'income' }).slice(0, 5);

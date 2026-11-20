@@ -11,6 +11,7 @@ import { itemCard } from '../shared/item-card.js';
 export default {
   path: '/inventory/keluar',
   title: 'Stock Keluar',
+  autoRefresh: false, // halaman form: jangan di-render ulang saat ada data baru
   render(el) {
     let selected = null;
 

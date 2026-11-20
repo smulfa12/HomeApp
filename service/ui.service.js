@@ -106,6 +106,12 @@ export function confirmDialog(message, { okText = 'Ya', cancelText = 'Batal', da
   });
 }
 
+/** User sedang mengetik / membuka sheet → jangan render ulang halaman. */
+export function isUserBusy() {
+  const a = document.activeElement;
+  return Boolean(document.querySelector('.sheet') || (a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)));
+}
+
 /* ---------- Form helpers ---------- */
 
 export function formData(form) {

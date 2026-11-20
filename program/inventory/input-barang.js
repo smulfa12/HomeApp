@@ -13,6 +13,7 @@ import { number } from '../../service/format.service.js';
 export default {
   path: '/inventory/input',
   title: 'Input Barang',
+  autoRefresh: false, // halaman form: jangan di-render ulang saat ada data baru
   render(el, params) {
     const editing = params.id ? inv.getItem(params.id) : null;
     let restockOf = null; // barang yang ditemukan lewat barcode
