@@ -4,10 +4,11 @@
  * pengeluaran, laporan per periode, neraca, laba-rugi, dan budget.
  */
 import { collection, load, save } from './storage.service.js';
-import { today } from './format.service.js';
+import { today, toISODate } from './format.service.js';
 
 const accounts = collection('fin.accounts');
 const transactions = collection('fin.transactions');
+const goals = collection('fin.goals');
 
 /* ---------- Master kategori ---------- */
 
@@ -128,6 +129,8 @@ export function deleteAccount(id) {
   const n = transactionCount(id);
   if (n) throw new Error(`Akun ini dipakai di ${n} transaksi. Arsipkan saja supaya riwayat tetap utuh.`);
   accounts.remove(id);
+  // lepaskan akun dari target tabungan yang memakainya
+  goals.filter((g) => (g.accountIds || []).includes(id)).forEach((g) => goals.update(g.id, { accountIds: g.accountIds.filter((x) => x !== id) }));
 }
 
 export const setArchived = (id, archived) => accounts.update(id, { archived });
@@ -249,6 +252,126 @@ export function transferKind(from, to) {
   if (from.type === 'liability' && to.type === 'asset') return 'Pinjam / pakai limit';
   if (from.type === 'liability' && to.type === 'liability') return 'Pindah hutang';
   return 'Pindah saldo';
+}
+
+/* ---------- Target tabungan ---------- */
+
+export const GOAL_ICONS = ['🛟', '🏠', '🎓', '🕋', '✈️', '🚗', '💍', '👶', '🏥', '📱', '🎁', '🐷'];
+export const GOAL_MILESTONES = [25, 50, 75, 100];
+
+export const listGoals = ({ includeArchived = false } = {}) =>
+  goals
+    .all()
+    .filter((g) => includeArchived || !g.archived)
+    .sort((a, b) => (a.deadline || '9999').localeCompare(b.deadline || '9999') || a.name.localeCompare(b.name));
+export const getGoal = (id) => goals.get(id);
+
+export function saveGoal(data) {
+  const name = (data.name || '').trim();
+  const target = Number(data.targetAmount) || 0;
+  const ids = [...new Set(data.accountIds || [])];
+  if (!name) throw new Error('Nama target wajib diisi');
+  if (target <= 0) throw new Error('Nominal target harus lebih dari 0');
+  if (!ids.length) throw new Error('Pilih minimal 1 rekening tempat menyimpan');
+  const clean = {
+    name,
+    icon: data.icon || '🐷',
+    targetAmount: target,
+    accountIds: ids,
+    deadline: data.deadline || '',
+    note: (data.note || '').trim(),
+    archived: Boolean(data.archived),
+  };
+  return data.id ? goals.update(data.id, clean) : goals.add({ ...clean, milestone: 0 });
+}
+
+export const deleteGoal = (id) => goals.remove(id);
+export const setGoalArchived = (id, archived) => goals.update(id, { archived });
+
+/** Target lain yang juga memakai akun ini (saldonya terhitung ganda). */
+export const goalsUsingAccount = (accountId, exceptGoalId) =>
+  listGoals().filter((g) => g.id !== exceptGoalId && (g.accountIds || []).includes(accountId));
+
+function monthsBetween(fromISO, toISO) {
+  const [fy, fm] = fromISO.split('-').map(Number);
+  const [ty, tm] = toISO.split('-').map(Number);
+  return (ty - fy) * 12 + (tm - fm);
+}
+
+function addMonthsISO(iso, n) {
+  const [y, m] = iso.split('-').map(Number);
+  const d = new Date(y, m - 1 + n, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+}
+
+/**
+ * Progres target: jumlah saldo semua akun terkait.
+ * Juga menghitung kebutuhan nabung per bulan (bila ada tenggat) dan
+ * perkiraan tercapai berdasarkan rata-rata kenaikan saldo 3 bulan terakhir.
+ */
+export function goalProgress(goal) {
+  const linked = (goal.accountIds || []).map((id) => accounts.get(id)).filter(Boolean);
+  const parts = linked.map((a) => ({ account: a, balance: accountBalance(a), shared: goalsUsingAccount(a.id, goal.id) }));
+  const saved = parts.reduce((s, p) => s + p.balance, 0);
+  const target = Number(goal.targetAmount) || 0;
+  const remaining = Math.max(target - saved, 0);
+  const pct = target ? Math.max(0, Math.round((saved / target) * 100)) : 0;
+  const now = today();
+
+  let monthlyNeeded = null;
+  let monthsLeft = null;
+  if (goal.deadline && remaining > 0) {
+    monthsLeft = Math.max(monthsBetween(now, goal.deadline), 0);
+    monthlyNeeded = monthsLeft > 0 ? Math.ceil(remaining / monthsLeft) : remaining;
+  }
+
+  // laju: kenaikan saldo dalam 90 hari terakhir → per bulan
+  const past = new Date();
+  past.setDate(past.getDate() - 90);
+  const pastISO = toISODate(past);
+  const savedThen = linked.reduce((s, a) => s + accountBalance(a, pastISO), 0);
+  const monthlyPace = Math.round((saved - savedThen) / 3);
+  let eta = null;
+  if (remaining > 0 && monthlyPace > 0) eta = addMonthsISO(now, Math.ceil(remaining / monthlyPace));
+
+  return {
+    saved,
+    target,
+    remaining,
+    pct,
+    done: target > 0 && saved >= target,
+    parts,
+    monthsLeft,
+    monthlyNeeded,
+    monthlyPace,
+    eta,
+    onTrack: goal.deadline ? (eta ? eta.slice(0, 7) <= goal.deadline.slice(0, 7) : remaining === 0) : null,
+  };
+}
+
+/**
+ * Cek apakah target melewati milestone baru (25/50/75/100%).
+ * Mengembalikan angka milestone yang baru tercapai (untuk dirayakan) atau null.
+ */
+export function checkMilestone(goal) {
+  const { pct } = goalProgress(goal);
+  const reached = GOAL_MILESTONES.filter((m) => pct >= m).pop() || 0;
+  if (reached > (Number(goal.milestone) || 0)) {
+    goals.update(goal.id, { milestone: reached });
+    return reached;
+  }
+  return null;
+}
+
+/** Saran dana darurat: 6 × rata-rata pengeluaran 3 bulan penuh terakhir. */
+export function suggestEmergencyFund(multiplier = 6) {
+  const now = new Date();
+  const from = toISODate(new Date(now.getFullYear(), now.getMonth() - 3, 1));
+  const to = toISODate(new Date(now.getFullYear(), now.getMonth(), 0));
+  const spent = total(listTransactions({ type: 'expense', from, to }));
+  if (!spent) return null;
+  const monthly = Math.round(spent / 3);
+  return { monthly, suggested: Math.ceil((monthly * multiplier) / 100000) * 100000, multiplier };
 }
 
 /* ---------- Laporan: laba rugi & neraca ---------- */

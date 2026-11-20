@@ -206,3 +206,23 @@ export function barList(rows, { tone = 'peach', format = (v) => v, emoji = () =>
         .join('')}
     </ul>`;
 }
+
+/** Animasi perayaan (konfeti emoji) + pesan, mis. saat target tabungan tercapai. */
+export function celebrate(message) {
+  const layer = document.createElement('div');
+  layer.className = 'celebrate';
+  layer.setAttribute('role', 'status');
+  const bits = ['🎉', '✨', '💜', '🪙', '🎊', '⭐'];
+  layer.innerHTML =
+    `<div class="celebrate__msg">${esc(message)}</div>` +
+    Array.from({ length: 28 }, (_, i) => {
+      const left = Math.random() * 100;
+      const delay = Math.random() * 0.6;
+      const dur = 1.6 + Math.random() * 1.2;
+      return `<span style="left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s">${bits[i % bits.length]}</span>`;
+    }).join('');
+  document.body.appendChild(layer);
+  if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+  layer.addEventListener('click', () => layer.remove());
+  setTimeout(() => layer.remove(), 3200);
+}

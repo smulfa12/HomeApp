@@ -39,7 +39,7 @@ create table if not exists public.inv_movements (
 create index if not exists inv_movements_item_idx on public.inv_movements (item_id);
 
 -- ---------- Keuangan ----------
--- (Database lama: jalankan juga 002_akun_uang.sql dan 003_transfer.sql)
+-- (Database lama: jalankan juga 002_akun_uang.sql, 003_transfer.sql, 004_target_tabungan.sql)
 create table if not exists public.fin_accounts (
   id          text primary key,
   name        text not null,
@@ -81,6 +81,23 @@ alter table public.fin_transactions add constraint fin_transactions_transfer_che
   check (type <> 'transfer' or (to_account_id is not null and to_account_id <> account_id));
 create index if not exists fin_transactions_ref_idx on public.fin_transactions (ref_id);
 
+-- ---------- Target tabungan ----------
+create table if not exists public.fin_goals (
+  id             text primary key,
+  name           text not null,
+  icon           text,
+  target_amount  double precision not null check (target_amount > 0),
+  account_ids    text[] not null default '{}',
+  deadline       date,
+  note           text,
+  archived       boolean not null default false,
+  milestone      integer not null default 0,
+  created_at     text,
+  updated_at     text,
+  created_by     uuid default auth.uid()
+);
+create index if not exists fin_goals_account_ids_idx on public.fin_goals using gin (account_ids);
+
 -- ---------- Pengaturan (lokasi, budget, dll) ----------
 create table if not exists public.app_settings (
   key         text primary key,
@@ -92,7 +109,7 @@ create table if not exists public.app_settings (
 do $$
 declare t text;
 begin
-  foreach t in array array['inv_items','inv_movements','fin_accounts','fin_transactions','app_settings'] loop
+  foreach t in array array['inv_items','inv_movements','fin_accounts','fin_transactions','fin_goals','app_settings'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists "keluarga boleh semua" on public.%I', t);
     execute format('create policy "keluarga boleh semua" on public.%I for all to authenticated using (true) with check (true)', t);

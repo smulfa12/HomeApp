@@ -21,10 +21,15 @@ export default {
   path: '/finance/transfer',
   title: 'Transfer',
   autoRefresh: false,
-  render(el) {
+  render(el, params) {
     const assets = fin.listAccounts('asset');
-    let fromId = assets[0]?.id || '';
-    let toId = assets[1]?.id || '';
+    // ?to=ID → dibuka dari tombol "Tambah tabungan" di Target Tabungan
+    let toId = params.to && fin.getAccount(params.to) ? params.to : assets[1]?.id || '';
+    // asal: bila tujuan dipilih otomatis, ambil rekening lain dengan saldo terbesar
+    const others = assets.filter((a) => a.id !== toId);
+    const liquid = (a) => (fin.LIQUID_GROUPS.includes(a.group) ? 1 : 0); // kas, bank, e-wallet didahulukan
+    if (params.to) others.sort((a, b) => liquid(b) - liquid(a) || fin.accountBalance(b) - fin.accountBalance(a));
+    let fromId = others[0]?.id || '';
     let range;
 
     el.innerHTML = `
