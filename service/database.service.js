@@ -26,6 +26,10 @@ export const TABLES = {
     table: 'fin_transactions',
     columns: ['id', 'type', 'amount', 'category', 'accountId', 'toAccountId', 'refId', 'date', 'note', 'source', 'createdAt', 'updatedAt'],
   },
+  'fin.goals': {
+    table: 'fin_goals',
+    columns: ['id', 'name', 'icon', 'targetAmount', 'accountIds', 'deadline', 'note', 'archived', 'milestone', 'createdAt', 'updatedAt'],
+  },
 };
 
 /** Pengaturan yang disimpan di tabel app_settings. */
@@ -45,11 +49,14 @@ export function toRow(key, obj) {
   return out;
 }
 
+/** Nilai pengganti NULL dari database untuk kolom non-teks. */
+const EMPTY = { archived: false, accountIds: [], milestone: 0 };
+
 export function fromRow(key, row) {
   const out = {};
   TABLES[key].columns.forEach((c) => {
     const v = row[snake(c)];
-    out[c] = v == null ? (c === 'archived' ? false : '') : v;
+    out[c] = v == null ? (c in EMPTY ? EMPTY[c] : '') : v;
   });
   return out;
 }

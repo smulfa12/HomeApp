@@ -494,3 +494,31 @@ select.input {
 }
 .scanner__torch.on { background: var(--butter); }
 .scanner__engine { margin: -4px 0 0; text-align: center; font-size: 11px; color: var(--muted); }
+
+/* ---------- Perayaan ---------- */
+.celebrate { position: fixed; inset: 0; z-index: 120; pointer-events: auto; overflow: hidden; }
+.celebrate span { position: absolute; top: -40px; font-size: 26px; animation: confetti linear forwards; }
+@keyframes confetti {
+  to { transform: translateY(110vh) rotate(540deg); opacity: 0.8; }
+}
+.celebrate__msg {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  max-width: calc(100% - 48px);
+  padding: 18px 24px;
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: var(--shadow-pop);
+  font-size: 18px;
+  font-weight: 900;
+  text-align: center;
+  animation: pop-in 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+@keyframes pop-in {
+  from { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .celebrate span { display: none; }
+}

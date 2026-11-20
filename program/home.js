@@ -29,6 +29,22 @@ export default {
       st.mode === 'cloud' ? `${SYNC_LABEL[st.status] || SYNC_LABEL.idle}${st.pending ? ` · ${st.pending} antri` : ''}` : '';
     const SYNC_LABEL = { synced: '☁️ Tersinkron', syncing: '🔄 Sinkron…', offline: '📴 Offline', error: '⚠️ Gagal sinkron', idle: '☁️ Online' };
 
+    const goals = fin.listGoals().slice(0, 3);
+    const goalsHtml = goals.length
+      ? `<a class="card goal-mini" href="#/finance/target">
+          <div class="card__head"><h2>🐷 Target Tabungan</h2><span class="link">Semua ›</span></div>
+          ${goals
+            .map((g) => {
+              const p = fin.goalProgress(g);
+              return `<div class="goal-mini__row">
+                <div class="row between small"><span>${esc(g.icon || '🐷')} <b>${esc(g.name)}</b></span><b>${p.pct}%</b></div>
+                <div class="goal-bar goal-bar--${p.done ? 'ok' : 'goal'} goal-bar--thin"><span style="width:${Math.min(p.pct, 100)}%"></span></div>
+              </div>`;
+            })
+            .join('')}
+        </a>`
+      : '';
+
     el.innerHTML = `
       <header class="home-head">
         <div>
@@ -76,6 +92,8 @@ export default {
         <a class="quick tone-sky" href="#/finance/expense"><span>🧾</span>Scan nota</a>
         <a class="quick tone-butter" href="#/finance/income"><span>💰</span>Pemasukan</a>
       </div>
+
+      ${goalsHtml}
 
       ${low.length ? `
       <section class="card">
