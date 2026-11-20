@@ -1,46 +1,48 @@
 /* ============================================================
-   THEME — Monokrom Hangat
-   Abu-abu hangat netral + satu warna aksen (teal).
+   THEME — Sage & Pasir
+   Warna natural yang kalem dan netral: hijau sage, krem pasir,
+   biru batu, zaitun, dan terakota. Tiap menu tetap punya warna
+   sendiri, tapi semuanya pudar & senada.
    Semua warna aplikasi diatur di file ini.
    ============================================================ */
 :root {
   /* Dasar */
-  --bg: #f5f4f2;          /* abu-abu hangat sangat muda */
+  --bg: #f6f4ef;          /* krem pasir sangat muda */
   --surface: #ffffff;
-  --surface-soft: #fbfaf8; /* isian input */
-  --ink: #2b2b2b;         /* teks utama */
-  --muted: #8c8986;
-  --line: #e6e3df;
-  --tile: #eeedea;        /* latar petak / kartu berwarna */
+  --surface-soft: #fcfbf8; /* isian input */
+  --ink: #2f3437;         /* teks utama */
+  --muted: #8a8d8f;
+  --line: #e7e3da;
+  --tile: #eeebe4;        /* latar petak netral */
 
-  /* Aksen utama (teal) */
-  --accent: #2f6e68;
-  --accent-ink: #3e7c76;
-  --accent-soft: #e4efee;
-  --accent-shadow: rgba(47, 110, 104, 0.25);
+  /* Aksen utama (sage tua) */
+  --accent: #55705f;
+  --accent-ink: #5e7f6c;
+  --accent-soft: #e5ece6;
+  --accent-shadow: rgba(85, 112, 95, 0.28);
 
-  /* Kartu gelap (saldo) */
-  --dark-1: #2f3a3a;
-  --dark-2: #4c5e5c;
+  /* Kartu saldo */
+  --dark-1: #55705f;
+  --dark-2: #7e9886;
 
   /* Status — tetap dibedakan agar angka penting mudah terbaca */
-  --ok: #3e7c76;
-  --ok-soft: #e4efee;
+  --ok: #55705f;
+  --ok-soft: #e5ece6;
   --warn: #b7791f;
   --warn-ink: #8a5a12;
-  --warn-soft: #f6ecd9;
-  --danger: #b4533f;
-  --danger-soft: #f6e4df;
-  --pos: #2f6e68;         /* angka pemasukan / sisa */
-  --neg: #b4533f;         /* angka pengeluaran / minus / hutang */
+  --warn-soft: #f4ead6;
+  --danger: #b0503f;
+  --danger-soft: #f5e3dd;
+  --pos: #55705f;         /* angka pemasukan / sisa */
+  --neg: #b0503f;         /* angka pengeluaran / minus / hutang */
 
-  /* Nama tone lama dipetakan ke palet monokrom (dipakai oleh .tone-*) */
-  --mint-bg: var(--tile);     --mint: var(--accent-ink);
-  --peach-bg: var(--tile);    --peach: var(--accent-ink);
-  --sky-bg: var(--tile);      --sky: var(--accent-ink);
-  --lavender-bg: var(--tile);  --lavender: var(--accent);
-  --butter-bg: var(--tile);   --butter: var(--accent-ink);
-  --rose-bg: var(--tile);     --rose: var(--accent-ink);
+  /* Warna per menu (latar petak + warna teks/ikon) */
+  --mint-bg: #e5ece6;     --mint: #5e7f6c;     /* sage */
+  --peach-bg: #f1eae0;    --peach: #9a7653;    /* pasir */
+  --sky-bg: #e3e9ee;      --sky: #4f6d86;      /* biru batu */
+  --lavender-bg: #e8eae6; --lavender: #55705f; /* sage abu (utama) */
+  --butter-bg: #efede1;   --butter: #857a45;   /* zaitun */
+  --rose-bg: #f1e5e0;     --rose: #a3685a;     /* terakota */
 
   /* Bentuk */
   --radius-lg: 24px;
