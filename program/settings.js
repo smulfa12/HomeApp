@@ -67,7 +67,7 @@ export default {
         <h2>📱 Pasang di HP</h2>
         <p class="small muted">Android (Chrome): menu ⋮ → <b>Tambahkan ke layar utama</b>.<br/>iPhone (Safari): tombol Bagikan → <b>Add to Home Screen</b>.</p>
       </section>
-      <p class="muted small center">Rumahku ${APP_VERSION} · dibuat dengan 💜</p>`;
+      <p class="muted small center">Rumahku ${APP_VERSION} · dibuat dengan 🤍</p>`;
 
     const dbBox = el.querySelector('[data-db]');
     const bindDb = () => {

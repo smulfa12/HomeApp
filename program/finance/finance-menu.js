@@ -27,7 +27,7 @@ export default {
     const pct = b.totalBudget ? Math.min(Math.round((b.totalSpent / b.totalBudget) * 100), 100) : 0;
 
     el.innerHTML = `
-      ${pageHeader({ title: 'Keuangan Rumah', subtitle: monthLabel(month), emoji: '💜', tone: 'lavender' })}
+      ${pageHeader({ title: 'Keuangan Rumah', subtitle: monthLabel(month), emoji: '💰', tone: 'lavender' })}
 
       <section class="balance-card">
         <span>Saldo kas, bank & e-wallet</span>

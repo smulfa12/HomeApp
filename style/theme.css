@@ -1,34 +1,54 @@
 /* ============================================================
-   THEME — warna, font, radius, bayangan.
-   Ubah di sini untuk mengganti tampilan seluruh aplikasi.
+   THEME — Monokrom Hangat
+   Abu-abu hangat netral + satu warna aksen (teal).
+   Semua warna aplikasi diatur di file ini.
    ============================================================ */
 :root {
   /* Dasar */
-  --bg: #fbf7f2;          /* krem hangat */
+  --bg: #f5f4f2;          /* abu-abu hangat sangat muda */
   --surface: #ffffff;
-  --ink: #3d3a4b;         /* teks utama, ungu tua lembut */
-  --muted: #8b8799;
-  --line: #efe8df;
+  --surface-soft: #fbfaf8; /* isian input */
+  --ink: #2b2b2b;         /* teks utama */
+  --muted: #8c8986;
+  --line: #e6e3df;
+  --tile: #eeedea;        /* latar petak / kartu berwarna */
 
-  /* Palet pastel (bg) + aksen kuat (ink) per tone */
-  --mint-bg: #dff3ea;     --mint: #3e9c78;
-  --peach-bg: #ffe6d9;    --peach: #e07a4f;
-  --sky-bg: #ddeefb;      --sky: #3a86c2;
-  --lavender-bg: #ece6fb; --lavender: #7a63c9;
-  --butter-bg: #fff2c7;   --butter: #b8860b;
-  --rose-bg: #fce4ec;     --rose: #d0587e;
+  /* Aksen utama (teal) */
+  --accent: #2f6e68;
+  --accent-ink: #3e7c76;
+  --accent-soft: #e4efee;
+  --accent-shadow: rgba(47, 110, 104, 0.25);
 
-  /* Status */
-  --ok: var(--mint);
-  --warn: #d98b1c;
-  --danger: #d9534f;
+  /* Kartu gelap (saldo) */
+  --dark-1: #2f3a3a;
+  --dark-2: #4c5e5c;
+
+  /* Status — tetap dibedakan agar angka penting mudah terbaca */
+  --ok: #3e7c76;
+  --ok-soft: #e4efee;
+  --warn: #b7791f;
+  --warn-ink: #8a5a12;
+  --warn-soft: #f6ecd9;
+  --danger: #b4533f;
+  --danger-soft: #f6e4df;
+  --pos: #2f6e68;         /* angka pemasukan / sisa */
+  --neg: #b4533f;         /* angka pengeluaran / minus / hutang */
+
+  /* Nama tone lama dipetakan ke palet monokrom (dipakai oleh .tone-*) */
+  --mint-bg: var(--tile);     --mint: var(--accent-ink);
+  --peach-bg: var(--tile);    --peach: var(--accent-ink);
+  --sky-bg: var(--tile);      --sky: var(--accent-ink);
+  --lavender-bg: var(--tile);  --lavender: var(--accent);
+  --butter-bg: var(--tile);   --butter: var(--accent-ink);
+  --rose-bg: var(--tile);     --rose: var(--accent-ink);
 
   /* Bentuk */
   --radius-lg: 24px;
   --radius: 18px;
   --radius-sm: 12px;
-  --shadow: 0 6px 20px rgba(61, 58, 75, 0.07);
-  --shadow-pop: 0 10px 30px rgba(61, 58, 75, 0.16);
+  --shadow: 0 6px 20px rgba(43, 43, 43, 0.06);
+  --shadow-pop: 0 10px 30px rgba(43, 43, 43, 0.16);
+  --overlay: rgba(43, 43, 43, 0.4);
 
   --font: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --tabbar-h: 68px;
@@ -43,7 +63,8 @@
 .tone-butter   { --t-bg: var(--butter-bg);   --t-ink: var(--butter); }
 .tone-rose     { --t-bg: var(--rose-bg);     --t-ink: var(--rose); }
 
-.text-mint { color: var(--mint); }
-.text-peach { color: var(--peach); }
-.text-rose { color: var(--rose); }
-.text-sky { color: var(--sky); }
+/* Warna teks angka: positif (pemasukan, sisa) vs negatif (pengeluaran, minus, hutang) */
+.text-mint { color: var(--pos); }
+.text-sky { color: var(--pos); }
+.text-peach { color: var(--neg); }
+.text-rose { color: var(--neg); }
