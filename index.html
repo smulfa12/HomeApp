@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#FBF7F2" />
+    <meta name="color-scheme" content="light" />
+    <meta name="description" content="Rumahku — inventory barang & keuangan keluarga dalam satu aplikasi." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Rumahku" />
+    <title>Rumahku</title>
+
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="style/assets/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="style/assets/icon-192.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="style/theme.css" />
+    <link rel="stylesheet" href="style/base.css" />
+    <link rel="stylesheet" href="style/layout.css" />
+    <link rel="stylesheet" href="style/components.css" />
+    <link rel="stylesheet" href="style/pages.css" />
+  </head>
+  <body>
+    <main id="app" class="app"></main>
+
+    <nav class="tabbar" aria-label="Navigasi utama">
+      <a href="#/" data-tab="home"><span>🏡</span>Beranda</a>
+      <a href="#/inventory" data-tab="inventory"><span>📦</span>Inventory</a>
+      <a href="#/finance" data-tab="finance"><span>💰</span>Keuangan</a>
+      <a href="#/settings" data-tab="settings"><span>⚙️</span>Atur</a>
+    </nav>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
