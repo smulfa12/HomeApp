@@ -11,4 +11,4 @@
  * Kalau dibiarkan kosong, aplikasi berjalan dalam "mode lokal" (data hanya di HP).
  */
 export const SUPABASE_URL = 'https://zdttzggjrdukursldxhd.supabase.co';
-export const SUPABASE_ANON_KEY = '';
+export const SUPABASE_ANON_KEY = 'sb_publishable_Fsyd3m2h5PINacGjKrWcKw_g6Ms9QOl';

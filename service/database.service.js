@@ -5,7 +5,7 @@
  */
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.config.js';
 
-const SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+const SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/+esm';
 const PAGE = 1000;
 
 /** Pemetaan "koleksi" lokal → tabel database beserta kolomnya (nama JS). */
