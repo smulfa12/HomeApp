@@ -1,0 +1,57 @@
+/**
+ * Menu Utama Financial Rumah
+ */
+import { pageHeader } from '../../service/ui.service.js';
+import { rupiah, rupiahShort, thisMonth, monthLabel } from '../../service/format.service.js';
+import * as fin from '../../service/finance.service.js';
+
+const MENUS = [
+  { href: '#/finance/income', emoji: '💰', title: 'Input Income', desc: 'Catat pemasukan', tone: 'mint' },
+  { href: '#/finance/expense', emoji: '🧾', title: 'Input Expense', desc: 'Scan nota / manual', tone: 'peach' },
+  { href: '#/finance/laporan-pengeluaran', emoji: '📉', title: 'Data Pengeluaran', desc: 'Per periode', tone: 'rose' },
+  { href: '#/finance/laporan-pemasukan', emoji: '📈', title: 'Data Pemasukan', desc: 'Per periode', tone: 'sky' },
+  { href: '#/finance/neraca', emoji: '⚖️', title: 'Neraca & Laba Rugi', desc: 'Kesehatan keuangan', tone: 'lavender' },
+  { href: '#/finance/budget', emoji: '🎯', title: 'Budget & Realisasi', desc: 'Rencana vs aktual', tone: 'butter' },
+];
+
+export default {
+  path: '/finance',
+  title: 'Keuangan Rumah',
+  render(el) {
+    const month = thisMonth();
+    const s = fin.summary(month);
+    const b = fin.budgetVsActual(month);
+    const pct = b.totalBudget ? Math.min(Math.round((b.totalSpent / b.totalBudget) * 100), 100) : 0;
+
+    el.innerHTML = `
+      ${pageHeader({ title: 'Keuangan Rumah', subtitle: monthLabel(month), emoji: '💜', tone: 'lavender' })}
+
+      <section class="balance-card">
+        <span>Saldo kas, bank & e-wallet</span>
+        <strong>${rupiah(s.cash)}</strong>
+        <div class="balance-card__row">
+          <div><small>⬆️ Pemasukan</small><b>${rupiahShort(s.income)}</b></div>
+          <div><small>⬇️ Pengeluaran</small><b>${rupiahShort(s.expense)}</b></div>
+          <div><small>💫 Selisih</small><b>${rupiahShort(s.net)}</b></div>
+        </div>
+        ${b.totalBudget ? `
+        <div class="balance-card__budget">
+          <div class="row between small"><span>Budget terpakai</span><span>${pct}%</span></div>
+          <div class="bar bar--light"><span style="width:${pct}%"></span></div>
+        </div>` : ''}
+      </section>
+
+      <section class="menu-grid">
+        ${MENUS.map(
+          (m) => `
+          <a class="menu-tile tone-${m.tone}" href="${m.href}">
+            <span class="menu-tile__icon">${m.emoji}</span>
+            <span class="menu-tile__title">${m.title}</span>
+            <span class="menu-tile__desc">${m.desc}</span>
+          </a>`
+        ).join('')}
+      </section>
+
+      <a class="link-card" href="#/finance/akun">🏦 Kelola akun, dompet & hutang <span>›</span></a>`;
+  },
+};
