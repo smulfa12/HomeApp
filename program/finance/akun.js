@@ -43,6 +43,8 @@ export default {
           <div class="stat tone-rose"><span>Total hutang</span><strong class="small-num">${rupiah(totalDebt)}</strong></div>
         </section>
 
+        <a class="link-card" href="#/finance/transfer">🔁 Transfer antar dompet / bayar hutang <span>›</span></a>
+
         <section class="card">
           <div class="card__head"><h2>💰 Uang & Aset</h2><button class="btn btn--primary btn--sm" data-add="asset">+ Tambah</button></div>
           ${assets.length ? `<ul class="acc-list">${assets.map(row).join('')}</ul>` : emptyState('👛', 'Belum ada', 'Tambahkan dompet, rekening, atau e-wallet.')}

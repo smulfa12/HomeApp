@@ -32,6 +32,7 @@ export const EXPENSE_CATEGORIES = [
   { name: 'Rumah Tangga', emoji: '🏠' },
   { name: 'Hiburan', emoji: '🎈' },
   { name: 'Sedekah', emoji: '🤲' },
+  { name: 'Biaya Admin', emoji: '🏧' },
   { name: 'Lainnya', emoji: '🧾' },
 ];
 
@@ -119,7 +120,8 @@ export function saveAccount(data) {
   return data.id ? accounts.update(data.id, clean) : accounts.add(clean);
 }
 
-export const transactionCount = (accountId) => transactions.filter((t) => t.accountId === accountId).length;
+export const transactionCount = (accountId) =>
+  transactions.filter((t) => t.accountId === accountId || t.toAccountId === accountId).length;
 
 /** Hapus akun. Ditolak bila akun sudah dipakai transaksi (arsipkan saja). */
 export function deleteAccount(id) {
@@ -130,12 +132,21 @@ export function deleteAccount(id) {
 
 export const setArchived = (id, archived) => accounts.update(id, { archived });
 
-/** Saldo akun aset = saldo awal + pemasukan − pengeluaran (sampai tanggal `asOf`). */
+/**
+ * Saldo akun sampai tanggal `asOf`.
+ *  - Aset   : saldo awal + pemasukan − pengeluaran + transfer masuk − transfer keluar
+ *  - Hutang : sisa awal − pembayaran (transfer masuk ke akun hutang)
+ *             + pemakaian (transfer keluar dari akun hutang, mis. paylater)
+ */
 export function accountBalance(account, asOf = '9999-12-31') {
-  if (account.type === 'liability') return Number(account.opening) || 0;
+  const sign = account.type === 'liability' ? -1 : 1;
   return transactions
-    .filter((t) => t.accountId === account.id && t.date <= asOf)
-    .reduce((sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount), Number(account.opening) || 0);
+    .filter((t) => t.date <= asOf && (t.accountId === account.id || t.toAccountId === account.id))
+    .reduce((sum, t) => {
+      if (t.type === 'transfer') return sum + (t.toAccountId === account.id ? sign * t.amount : -sign * t.amount);
+      if (account.type === 'liability') return sum; // pemasukan/pengeluaran tidak dicatat di akun hutang
+      return sum + (t.type === 'income' ? t.amount : -t.amount);
+    }, Number(account.opening) || 0);
 }
 
 /* ---------- Transaksi ---------- */
@@ -171,6 +182,74 @@ export function sumByCategory(rows) {
 }
 
 export const total = (rows) => rows.reduce((s, t) => s + t.amount, 0);
+
+/* ---------- Transfer antar akun ---------- */
+
+/**
+ * Pindahkan uang antar akun. Transfer tidak dihitung sebagai pemasukan /
+ * pengeluaran. Biaya admin (opsional) dicatat sebagai pengeluaran terpisah
+ * yang terhubung ke transfer lewat refId.
+ */
+export function addTransfer({ fromId, toId, amount, fee = 0, date, note = '' }) {
+  const n = Number(amount);
+  const f = Number(fee) || 0;
+  if (!fromId || !toId) throw new Error('Pilih akun asal dan tujuan');
+  if (fromId === toId) throw new Error('Akun asal dan tujuan tidak boleh sama');
+  if (!n || n <= 0) throw new Error('Nominal harus lebih dari 0');
+  if (f < 0) throw new Error('Biaya admin tidak valid');
+  const from = accounts.get(fromId);
+  const to = accounts.get(toId);
+  if (!from || !to) throw new Error('Akun tidak ditemukan');
+
+  const transfer = transactions.add({
+    type: 'transfer',
+    amount: n,
+    category: 'Transfer',
+    accountId: fromId,
+    toAccountId: toId,
+    date: date || today(),
+    note: note.trim(),
+    source: 'manual',
+    refId: '',
+  });
+  if (f > 0) {
+    transactions.add({
+      type: 'expense',
+      amount: f,
+      category: 'Biaya Admin',
+      accountId: fromId,
+      toAccountId: '',
+      date: transfer.date,
+      note: `Biaya transfer ke ${to.name}`,
+      source: 'transfer',
+      refId: transfer.id,
+    });
+  }
+  return transfer;
+}
+
+export function listTransfers({ from = '0000-01-01', to = '9999-12-31' } = {}) {
+  const all = transactions.all();
+  return all
+    .filter((t) => t.type === 'transfer' && t.date >= from && t.date <= to)
+    .map((t) => ({ ...t, fee: all.filter((x) => x.refId === t.id).reduce((s, x) => s + x.amount, 0) }))
+    .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+}
+
+/** Hapus transfer beserta biaya adminnya. */
+export function deleteTransfer(id) {
+  transactions.filter((t) => t.refId === id).forEach((t) => transactions.remove(t.id));
+  transactions.remove(id);
+}
+
+/** Jenis transfer, untuk label yang mudah dipahami. */
+export function transferKind(from, to) {
+  if (!from || !to) return 'Transfer';
+  if (from.type === 'asset' && to.type === 'liability') return 'Bayar hutang';
+  if (from.type === 'liability' && to.type === 'asset') return 'Pinjam / pakai limit';
+  if (from.type === 'liability' && to.type === 'liability') return 'Pindah hutang';
+  return 'Pindah saldo';
+}
 
 /* ---------- Laporan: laba rugi & neraca ---------- */
 

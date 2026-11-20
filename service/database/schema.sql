@@ -39,7 +39,7 @@ create table if not exists public.inv_movements (
 create index if not exists inv_movements_item_idx on public.inv_movements (item_id);
 
 -- ---------- Keuangan ----------
--- (Database lama: jalankan juga service/database/002_akun_uang.sql)
+-- (Database lama: jalankan juga 002_akun_uang.sql dan 003_transfer.sql)
 create table if not exists public.fin_accounts (
   id          text primary key,
   name        text not null,
@@ -59,10 +59,12 @@ create unique index if not exists fin_accounts_type_name_uniq on public.fin_acco
 
 create table if not exists public.fin_transactions (
   id          text primary key,
-  type        text not null,    -- income | expense
+  type        text not null,    -- income | expense | transfer
   amount      double precision not null,
   category    text,
   account_id  text,
+  to_account_id text,           -- akun tujuan (khusus transfer)
+  ref_id      text,             -- id transfer induk (khusus biaya admin)
   date        date not null,
   note        text,
   source      text,             -- manual | scan
@@ -71,6 +73,13 @@ create table if not exists public.fin_transactions (
   created_by  uuid default auth.uid()
 );
 create index if not exists fin_transactions_date_idx on public.fin_transactions (date);
+
+alter table public.fin_transactions drop constraint if exists fin_transactions_type_check;
+alter table public.fin_transactions add constraint fin_transactions_type_check check (type in ('income', 'expense', 'transfer'));
+alter table public.fin_transactions drop constraint if exists fin_transactions_transfer_check;
+alter table public.fin_transactions add constraint fin_transactions_transfer_check
+  check (type <> 'transfer' or (to_account_id is not null and to_account_id <> account_id));
+create index if not exists fin_transactions_ref_idx on public.fin_transactions (ref_id);
 
 -- ---------- Pengaturan (lokasi, budget, dll) ----------
 create table if not exists public.app_settings (

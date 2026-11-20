@@ -75,3 +75,5 @@
 .bottom-bar strong { display: block; font-size: 20px; }
 
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+/* isi kolom boleh menyusut — mencegah input tanggal/select melebar keluar layar */
+.grid-2 > *, .field { min-width: 0; }

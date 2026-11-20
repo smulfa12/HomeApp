@@ -32,11 +32,12 @@ import laporanPemasukan from './program/finance/laporan-pemasukan.js';
 import neracaLabaRugi from './program/finance/neraca-labarugi.js';
 import budget from './program/finance/budget.js';
 import akun from './program/finance/akun.js';
+import transfer from './program/finance/transfer.js';
 
 const MODULES = [
   login, home, settings,
   inventoryMenu, inputBarang, stockKeluar, stockOpname, daftarBelanja, barangLokasi,
-  financeMenu, inputIncome, inputExpense, laporanPengeluaran, laporanPemasukan, neracaLabaRugi, budget, akun,
+  financeMenu, inputIncome, inputExpense, laporanPengeluaran, laporanPemasukan, neracaLabaRugi, budget, akun, transfer,
 ];
 
 /** Tandai tab navigasi bawah yang aktif sesuai halaman. */

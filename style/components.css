@@ -121,7 +121,10 @@
   transition: border-color 0.2s, box-shadow 0.2s;
   appearance: none;
   -webkit-appearance: none;
+  min-width: 0;
+  max-width: 100%;
 }
+input[type='date'].input { min-height: 46px; }
 select.input {
   background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
   background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%;

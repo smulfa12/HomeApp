@@ -332,3 +332,24 @@ code { background: var(--bg); padding: 1px 6px; border-radius: 6px; font-size: 1
 }
 .icon-pick__item.on { background: var(--lavender-bg); border-color: var(--lavender); }
 a.setting-row { color: inherit; }
+
+/* ---------- Transfer ---------- */
+.tf-box { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 18px; background: var(--sky-bg); }
+.tf-box .input { background: var(--surface); border-color: transparent; }
+.tf-balance { font-size: 12px; font-weight: 700; color: var(--sky); min-height: 16px; margin: 0 4px 6px; }
+.tf-swap {
+  align-self: center;
+  width: 40px;
+  height: 40px;
+  margin: -6px 0;
+  border-radius: 50%;
+  background: var(--sky);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+  box-shadow: 0 4px 12px rgba(58, 134, 194, 0.35);
+  transition: transform 0.25s;
+}
+.tf-swap:active { transform: rotate(180deg); }
+.tf-kind { font-size: 13px; font-weight: 700; color: var(--muted); }
+.tf-route { white-space: normal; line-height: 1.3; }
