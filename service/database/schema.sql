@@ -39,16 +39,23 @@ create table if not exists public.inv_movements (
 create index if not exists inv_movements_item_idx on public.inv_movements (item_id);
 
 -- ---------- Keuangan ----------
+-- (Database lama: jalankan juga service/database/002_akun_uang.sql)
 create table if not exists public.fin_accounts (
   id          text primary key,
   name        text not null,
   type        text not null,    -- asset | liability
   "group"     text,
+  icon        text,
+  number      text,             -- nomor rekening / no. HP e-wallet
+  note        text,
+  archived    boolean not null default false,
   opening     double precision not null default 0,
   created_at  text,
   updated_at  text,
   created_by  uuid default auth.uid()
 );
+
+create unique index if not exists fin_accounts_type_name_uniq on public.fin_accounts (type, lower(name));
 
 create table if not exists public.fin_transactions (
   id          text primary key,

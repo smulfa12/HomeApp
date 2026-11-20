@@ -304,3 +304,31 @@ body.auth-page .app { padding-bottom: 32px; }
 .kv span { color: var(--muted); }
 .kv strong { text-align: right; overflow-wrap: anywhere; }
 code { background: var(--bg); padding: 1px 6px; border-radius: 6px; font-size: 12px; }
+
+/* ---------- Dompet & rekening ---------- */
+.acc-row__icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: var(--t-bg);
+  font-size: 20px;
+}
+.acc-row__bal { white-space: nowrap; font-size: 14px; }
+.acc-row--archived { opacity: 0.6; }
+.acc-row:focus-visible { outline: 3px solid var(--lavender); border-radius: 12px; }
+.archived-box summary { font-weight: 800; cursor: pointer; }
+.icon-pick { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.icon-pick__item {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 2px solid transparent;
+}
+.icon-pick__item.on { background: var(--lavender-bg); border-color: var(--lavender); }
+a.setting-row { color: inherit; }

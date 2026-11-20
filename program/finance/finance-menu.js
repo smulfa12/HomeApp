@@ -52,6 +52,6 @@ export default {
         ).join('')}
       </section>
 
-      <a class="link-card" href="#/finance/akun">🏦 Kelola akun, dompet & hutang <span>›</span></a>`;
+      <a class="link-card" href="#/finance/akun">💳 Dompet, rekening & hutang <span>›</span></a>`;
   },
 };

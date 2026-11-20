@@ -81,8 +81,11 @@ async function applyOp(op) {
   }
 }
 
-/** Error karena data (bukan jaringan / sesi) → tidak akan berhasil walau diulang. */
-const isDataError = (err) => /^(22|23|42|PGRST1|PGRST2)/.test(String(err?.code || ''));
+/** Kolom / tabel belum ada di database → SQL migrasi belum dijalankan. Perubahan tetap disimpan di antrian. */
+const isSchemaMissing = (err) => ['PGRST204', 'PGRST205', '42703', '42P01'].includes(String(err?.code || ''));
+
+/** Error karena data (bukan jaringan / sesi / skema) → tidak akan berhasil walau diulang. */
+const isDataError = (err) => !isSchemaMissing(err) && /^(22|23|42|PGRST1|PGRST2)/.test(String(err?.code || ''));
 
 let flushing = null;
 let flushTimer = null;
@@ -102,7 +105,10 @@ export function flush() {
         await applyOp(q[0]);
       } catch (err) {
         if (!isDataError(err)) {
-          emit({ status: navigator.onLine ? 'error' : 'offline', error: err?.message || String(err) });
+          const error = isSchemaMissing(err)
+            ? 'Database perlu diperbarui: jalankan file SQL terbaru (service/database/) di Supabase. Perubahan aman tersimpan di HP.'
+            : err?.message || String(err);
+          emit({ status: navigator.onLine ? 'error' : 'offline', error });
           return;
         }
         console.error('Perubahan ditolak database, dilewati:', q[0], err);

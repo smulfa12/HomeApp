@@ -20,7 +20,7 @@ export const TABLES = {
   },
   'fin.accounts': {
     table: 'fin_accounts',
-    columns: ['id', 'name', 'type', 'group', 'opening', 'createdAt', 'updatedAt'],
+    columns: ['id', 'name', 'type', 'group', 'icon', 'number', 'note', 'archived', 'opening', 'createdAt', 'updatedAt'],
   },
   'fin.transactions': {
     table: 'fin_transactions',
@@ -49,7 +49,7 @@ export function fromRow(key, row) {
   const out = {};
   TABLES[key].columns.forEach((c) => {
     const v = row[snake(c)];
-    out[c] = v == null ? '' : v;
+    out[c] = v == null ? (c === 'archived' ? false : '') : v;
   });
   return out;
 }
