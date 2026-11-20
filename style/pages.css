@@ -274,3 +274,33 @@
   .loc-grid { grid-template-columns: repeat(2, 1fr); }
   .budget-input { grid-template-columns: 1fr; }
 }
+
+/* ---------- Database: login & status sinkron ---------- */
+body.auth-page .tabbar { display: none; }
+body.auth-page .app { padding-bottom: 32px; }
+.login { display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 6vh; text-align: center; }
+.login__logo { border-radius: 28px; box-shadow: var(--shadow-pop); margin-bottom: 6px; }
+.login h1 { font-size: 28px; font-weight: 900; }
+.login > p { margin-bottom: 10px; }
+.login .card { width: 100%; text-align: left; }
+.login__error { background: #fdeceb; color: var(--danger); padding: 10px 12px; border-radius: 12px; font-weight: 700; font-size: 13.5px; }
+.btn:disabled { opacity: 0.6; pointer-events: none; }
+
+.sync-pill {
+  display: inline-flex;
+  margin-top: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  background: var(--mint-bg);
+  color: var(--mint);
+}
+.sync-pill--syncing, .sync-pill--idle { background: var(--sky-bg); color: var(--sky); }
+.sync-pill--offline { background: var(--butter-bg); color: #a26a00; }
+.sync-pill--error { background: #fde2e1; color: var(--danger); }
+
+.kv { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+.kv span { color: var(--muted); }
+.kv strong { text-align: right; overflow-wrap: anywhere; }
+code { background: var(--bg); padding: 1px 6px; border-radius: 6px; font-size: 12px; }

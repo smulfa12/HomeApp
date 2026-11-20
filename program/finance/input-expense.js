@@ -12,6 +12,7 @@ import { transactionFormHtml, bindTransactionForm } from '../shared/transaction-
 export default {
   path: '/finance/expense',
   title: 'Input Expense',
+  autoRefresh: false, // halaman form: jangan di-render ulang saat ada data baru
   render(el, params) {
     let mode = params.mode === 'manual' ? 'manual' : 'scan';
     let scanned = null;

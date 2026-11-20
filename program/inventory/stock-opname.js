@@ -12,6 +12,7 @@ import { navigate } from '../../service/router.service.js';
 export default {
   path: '/inventory/opname',
   title: 'Stock Opname',
+  autoRefresh: false, // halaman form: jangan di-render ulang saat ada data baru
   render(el) {
     const items = inv.listItems();
     const counts = {};

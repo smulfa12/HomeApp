@@ -5,6 +5,7 @@ import { esc } from '../service/ui.service.js';
 import { rupiahShort, thisMonth, monthLabel } from '../service/format.service.js';
 import * as inv from '../service/inventory.service.js';
 import * as fin from '../service/finance.service.js';
+import { syncState, onSyncChange } from '../service/sync.service.js';
 
 function greeting() {
   const h = new Date().getHours();
@@ -23,12 +24,17 @@ export default {
     const fs = fin.summary(thisMonth());
     const low = inv.shoppingList().slice(0, 3);
     const empty = is.totalItems === 0 && fs.income === 0 && fs.expense === 0;
+    const sync = syncState();
+    const pillHtml = (st) =>
+      st.mode === 'cloud' ? `${SYNC_LABEL[st.status] || SYNC_LABEL.idle}${st.pending ? ` · ${st.pending} antri` : ''}` : '';
+    const SYNC_LABEL = { synced: '☁️ Tersinkron', syncing: '🔄 Sinkron…', offline: '📴 Offline', error: '⚠️ Gagal sinkron', idle: '☁️ Online' };
 
     el.innerHTML = `
       <header class="home-head">
         <div>
           <p class="muted">${hello} ${icon}</p>
           <h1>Rumahku</h1>
+          ${sync.mode === 'cloud' ? `<a class="sync-pill sync-pill--${sync.status}" href="#/settings" data-sync-pill>${pillHtml(sync)}</a>` : ''}
         </div>
         <a class="icon-btn" href="#/settings" aria-label="Pengaturan">⚙️</a>
       </header>
@@ -78,5 +84,12 @@ export default {
           ${low.map((i) => `<li><span>${inv.categoryInfo(i.category).emoji} ${esc(i.name)}</span><span class="badge badge--warn">sisa ${i.qty}</span></li>`).join('')}
         </ul>
       </section>` : ''}`;
+
+    const pill = el.querySelector('[data-sync-pill]');
+    return onSyncChange((st) => {
+      if (!pill) return;
+      pill.className = `sync-pill sync-pill--${st.status}`;
+      pill.textContent = pillHtml(st);
+    });
   },
 };
