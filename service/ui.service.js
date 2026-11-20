@@ -212,7 +212,7 @@ export function celebrate(message) {
   const layer = document.createElement('div');
   layer.className = 'celebrate';
   layer.setAttribute('role', 'status');
-  const bits = ['🎉', '✨', '💜', '🪙', '🎊', '⭐'];
+  const bits = ['🎉', '✨', '🤍', '🪙', '🎊', '⭐'];
   layer.innerHTML =
     `<div class="celebrate__msg">${esc(message)}</div>` +
     Array.from({ length: 28 }, (_, i) => {
