@@ -6,15 +6,15 @@ import { rupiah, rupiahShort, thisMonth, monthLabel } from '../../service/format
 import * as fin from '../../service/finance.service.js';
 
 const MENUS = [
-  { href: '#/finance/income', emoji: '💰', title: 'Input Income', desc: 'Catat pemasukan', tone: 'mint' },
-  { href: '#/finance/expense', emoji: '🧾', title: 'Input Expense', desc: 'Scan nota / manual', tone: 'peach' },
-  { href: '#/finance/laporan-pengeluaran', emoji: '📉', title: 'Data Pengeluaran', desc: 'Per periode', tone: 'rose' },
-  { href: '#/finance/laporan-pemasukan', emoji: '📈', title: 'Data Pemasukan', desc: 'Per periode', tone: 'sky' },
+  { href: '#/finance/income', emoji: '💰', title: 'Income', desc: 'Catat pemasukan', tone: 'mint' },
+  { href: '#/finance/expense', emoji: '🧾', title: 'Expense', desc: 'Scan nota / manual', tone: 'peach' },
+  { href: '#/finance/transfer', emoji: '🔁', title: 'Transfer', desc: 'Antar dompet & rekening', tone: 'sky' },
+  { href: '#/finance/target', emoji: '🐷', title: 'Target Tabungan', desc: 'Dana darurat & impian', tone: 'rose' },
   { href: '#/finance/neraca', emoji: '⚖️', title: 'Neraca & Laba Rugi', desc: 'Kesehatan keuangan', tone: 'lavender' },
   { href: '#/finance/budget', emoji: '🎯', title: 'Budget & Realisasi', desc: 'Rencana vs aktual', tone: 'butter' },
-  { href: '#/finance/target', emoji: '🐷', title: 'Target Tabungan', desc: 'Dana darurat & impian', tone: 'rose' },
-  { href: '#/finance/transfer', emoji: '🔁', title: 'Transfer', desc: 'Antar dompet & rekening', tone: 'sky' },
-  { href: '#/finance/akun', emoji: '💳', title: 'Dompet & Rekening', desc: 'Atur tempat uang', tone: 'mint' },
+  { href: '#/finance/laporan-pemasukan', emoji: '📈', title: 'Data Pemasukan', desc: 'Per periode', tone: 'sky' },
+  { href: '#/finance/laporan-pengeluaran', emoji: '📉', title: 'Data Pengeluaran', desc: 'Per periode', tone: 'rose' },
+  { href: '#/finance/akun', emoji: '💳', title: 'Atur Dompet & Rekening', desc: 'Tambah / atur tempat uang', tone: 'mint' },
 ];
 
 export default {
