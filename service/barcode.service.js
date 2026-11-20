@@ -8,6 +8,7 @@
  */
 import { loadScript } from './script-loader.service.js';
 import { openSheet } from './ui.service.js';
+import { APP_VERSION } from './version.service.js';
 
 const ZXING_URL = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
 const NATIVE_FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'itf', 'qr_code'];
@@ -15,43 +16,68 @@ const ZXING_FORMATS = ['EAN_13', 'EAN_8', 'UPC_A', 'UPC_E', 'CODE_128', 'CODE_39
 
 /* ---------- Pembaca barcode ---------- */
 
-let decoderPromise = null;
+let decodersPromise = null;
 
-/** Mengembalikan fungsi async (canvas) → teks barcode | null. */
-function getDecoder() {
-  if (!decoderPromise) {
-    decoderPromise = (async () => {
-      if ('BarcodeDetector' in window) {
+async function nativeDecoder() {
+  if (!('BarcodeDetector' in window)) return null;
+  try {
+    const supported = await window.BarcodeDetector.getSupportedFormats();
+    if (!supported.includes('ean_13')) return null;
+    const detector = new window.BarcodeDetector({ formats: NATIVE_FORMATS.filter((f) => supported.includes(f)) });
+    return {
+      name: 'bawaan',
+      decode: async (canvas) => {
         try {
-          const supported = await window.BarcodeDetector.getSupportedFormats();
-          if (supported.includes('ean_13')) {
-            const detector = new window.BarcodeDetector({ formats: NATIVE_FORMATS.filter((f) => supported.includes(f)) });
-            return async (canvas) => (await detector.detect(canvas))[0]?.rawValue || null;
-          }
-        } catch { /* lanjut ke ZXing */ }
-      }
-      const ZX = await loadScript(ZXING_URL, 'ZXing');
-      const hints = new Map();
-      hints.set(ZX.DecodeHintType.POSSIBLE_FORMATS, ZXING_FORMATS.map((f) => ZX.BarcodeFormat[f]));
-      hints.set(ZX.DecodeHintType.TRY_HARDER, true);
-      const reader = new ZX.MultiFormatReader();
-      reader.setHints(hints);
-      return async (canvas) => {
-        try {
-          const bitmap = new ZX.BinaryBitmap(new ZX.HybridBinarizer(new ZX.HTMLCanvasElementLuminanceSource(canvas)));
-          return reader.decodeWithState(bitmap).getText();
+          return (await detector.detect(canvas))[0]?.rawValue || null;
         } catch {
-          return null; // tidak ada barcode di frame ini
-        } finally {
-          reader.reset();
+          return null;
         }
-      };
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function zxingDecoder() {
+  const ZX = await loadScript(ZXING_URL, 'ZXing');
+  const hints = new Map();
+  hints.set(ZX.DecodeHintType.POSSIBLE_FORMATS, ZXING_FORMATS.map((f) => ZX.BarcodeFormat[f]));
+  hints.set(ZX.DecodeHintType.TRY_HARDER, true);
+  const reader = new ZX.MultiFormatReader();
+  reader.setHints(hints);
+  return {
+    name: 'ZXing',
+    decode: async (canvas) => {
+      try {
+        const bitmap = new ZX.BinaryBitmap(new ZX.HybridBinarizer(new ZX.HTMLCanvasElementLuminanceSource(canvas)));
+        return reader.decodeWithState(bitmap).getText();
+      } catch {
+        return null; // tidak ada barcode di frame ini
+      } finally {
+        reader.reset();
+      }
+    },
+  };
+}
+
+/**
+ * Semua pembaca yang tersedia: bawaan browser (bila ada) + ZXing.
+ * Keduanya dipakai bergantian, jadi kalau satu gagal yang lain tetap membaca.
+ */
+function getDecoders() {
+  if (!decodersPromise) {
+    decodersPromise = (async () => {
+      const [native, zxing] = await Promise.all([nativeDecoder(), zxingDecoder().catch((err) => err)]);
+      const list = [native, zxing instanceof Error ? null : zxing].filter(Boolean);
+      if (!list.length) throw zxing instanceof Error ? zxing : new Error('Pembaca barcode tidak tersedia');
+      return list;
     })().catch((err) => {
-      decoderPromise = null;
+      decodersPromise = null;
       throw err;
     });
   }
-  return decoderPromise;
+  return decodersPromise;
 }
 
 /**
@@ -90,7 +116,7 @@ const ATTEMPTS = [
 
 /** Baca barcode dari foto (File). */
 export async function decodeImageFile(file) {
-  const decode = await getDecoder();
+  const decoders = await getDecoders();
   const img = await new Promise((resolve, reject) => {
     const i = new Image();
     i.onload = () => resolve(i);
@@ -106,8 +132,11 @@ export async function decodeImageFile(file) {
   ];
   try {
     for (const t of tries) {
-      const code = await decode(grab(img, img.naturalWidth, img.naturalHeight, canvas, t));
-      if (code) return code;
+      grab(img, img.naturalWidth, img.naturalHeight, canvas, t);
+      for (const d of decoders) {
+        const code = await d.decode(canvas);
+        if (code) return code;
+      }
     }
     return null;
   } finally {
@@ -181,6 +210,7 @@ export function scanBarcode({ title = 'Scan Barcode' } = {}) {
             <input class="input" name="code" inputmode="numeric" placeholder="atau ketik kode barcode" autocomplete="off" />
             <button class="btn btn--soft" type="submit">OK</button>
           </form>
+          <p class="scanner__engine" data-engine>${APP_VERSION}</p>
         </div>`,
       onClose: () => finish(null),
     });
@@ -189,6 +219,7 @@ export function scanBarcode({ title = 'Scan Barcode' } = {}) {
     const video = view.querySelector('video');
     const hint = sheet.el.querySelector('[data-hint]');
     const torchBtn = sheet.el.querySelector('[data-torch]');
+    const engine = sheet.el.querySelector('[data-engine]');
 
     const showError = (msg) => {
       hint.textContent = msg;
@@ -228,7 +259,7 @@ export function scanBarcode({ title = 'Scan Barcode' } = {}) {
     });
 
     (async () => {
-      let decode;
+      let decoders;
       try {
         stream = await openCamera();
       } catch (err) {
@@ -256,19 +287,22 @@ export function scanBarcode({ title = 'Scan Barcode' } = {}) {
       }
 
       try {
-        decode = await getDecoder();
+        decoders = await getDecoders();
       } catch (err) {
         return showError(err.message + ' Kamu masih bisa ketik kode barcode.');
       }
       hint.classList.add('hidden');
+      engine.textContent = `${APP_VERSION} · pembaca: ${decoders.map((d) => d.name).join(' + ')}`;
 
       const canvas = document.createElement('canvas');
       let n = 0;
       const loop = async () => {
         if (done) return;
         if (video.readyState >= 2 && video.videoWidth) {
-          const attempt = ATTEMPTS[n++ % ATTEMPTS.length];
-          const code = await decode(grab(video, video.videoWidth, video.videoHeight, canvas, { ...attempt, maxW: 1000 }));
+          const decoder = decoders[n % decoders.length];
+          const attempt = ATTEMPTS[Math.floor(n / decoders.length) % ATTEMPTS.length];
+          n++;
+          const code = await decoder.decode(grab(video, video.videoWidth, video.videoHeight, canvas, { ...attempt, maxW: 1000 }));
           if (code) return finish(code);
         }
         setTimeout(loop, 120);

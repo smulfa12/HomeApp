@@ -2,7 +2,7 @@
  * Service Worker — supaya aplikasi bisa dibuka tanpa internet.
  * Naikkan VERSION setiap kali ada perubahan file agar cache diperbarui.
  */
-const VERSION = 'rumahku-v4';
+const VERSION = 'rumahku-v5';
 const CORE = [
   './',
   './index.html',
@@ -28,6 +28,7 @@ const CORE = [
   './service/database.service.js',
   './service/sync.service.js',
   './service/supabase.config.js',
+  './service/version.service.js',
   './program/login.js',
   './program/home.js',
   './program/settings.js',
@@ -51,7 +52,7 @@ const CORE = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(CORE.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -69,8 +70,10 @@ self.addEventListener('fetch', (e) => {
   const sameOrigin = url.origin === location.origin;
 
   if (sameOrigin) {
+    // cache: 'no-cache' → selalu cek ke server dulu (tidak memakai cache HTTP browser yang bisa basi)
+    const fresh = req.mode === 'navigate' ? req : new Request(req, { cache: 'no-cache' });
     e.respondWith(
-      fetch(req)
+      fetch(fresh)
         .then((res) => {
           const copy = res.clone();
           caches.open(VERSION).then((c) => c.put(req, copy));
