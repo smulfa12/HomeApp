@@ -39,7 +39,8 @@ export function transactionFormHtml(type, { amount = '', date = today(), note = 
         </label>
         <label class="field">
           <span>${type === 'income' ? 'Masuk ke' : 'Dibayar dari'}</span>
-          <select class="input" name="accountId">${options(fin.listAccounts('asset'), null, { valueKey: 'id', labelKey: 'name' })}</select>
+          <select class="input" name="accountId">${options(fin.listAccounts('asset'), null, { valueKey: 'id', labelKey: (a) => `${fin.accountIcon(a)} ${a.name}` })}</select>
+          <a class="link small" href="#/finance/akun">+ Tambah dompet / rekening</a>
         </label>
       </div>
       <label class="field">

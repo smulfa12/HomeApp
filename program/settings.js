@@ -56,6 +56,7 @@ export default {
       ${pageHeader({ title: 'Pengaturan', subtitle: cloud ? 'Data tersimpan di database Supabase' : 'Data tersimpan di HP ini', emoji: '⚙️', tone: 'sky' })}
       <div data-db>${dbCard(syncState())}</div>
       <section class="card settings">
+        <a class="setting-row" href="#/finance/akun?from=settings"><span>💳</span><div><strong>Dompet & Rekening</strong><small>Tambah / atur tempat penyimpanan uang & hutang</small></div></a>
         <button class="setting-row" data-export><span>💾</span><div><strong>Backup data</strong><small>Unduh file cadangan (.json)</small></div></button>
         <label class="setting-row"><input type="file" accept="application/json" hidden data-import /><span>📂</span><div><strong>Pulihkan data</strong><small>Dari file backup${cloud ? ' (menggantikan data di database)' : ''}</small></div></label>
         <button class="setting-row" data-demo><span>🧸</span><div><strong>Isi data contoh</strong><small>Untuk mencoba semua fitur</small></div></button>

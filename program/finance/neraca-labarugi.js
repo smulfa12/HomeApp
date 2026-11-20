@@ -70,7 +70,7 @@ export default {
           ${section('📌 Kewajiban (Hutang)', bs.liabilities.map((a) => ({ label: `${esc(a.name)} <small class="muted">${esc(a.group)}</small>`, value: a.balance })), 'Total Kewajiban', bs.totalLiabilities, 'rose')}
           <div class="fin-grand tone-lavender"><span>Ekuitas / Kekayaan Bersih</span><strong>${rupiah(bs.equity)}</strong></div>
         </section>
-        <a class="link-card" href="#/finance/akun">✏️ Atur akun, saldo awal & hutang <span>›</span></a>`;
+        <a class="link-card" href="#/finance/akun?from=neraca">✏️ Atur akun, saldo awal & hutang <span>›</span></a>`;
     };
 
     el.querySelectorAll('[data-tab]').forEach((b) =>

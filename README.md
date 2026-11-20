@@ -25,7 +25,7 @@ Bisa dipasang ke layar utama HP dan tetap jalan tanpa internet (kecuali scan not
 | 5 | **Neraca & Laba Rugi** | Laba rugi per periode (surplus/defisit, rasio tabungan) dan neraca (aset − hutang = kekayaan bersih, rasio hutang). |
 | 6 | **Budget & Realisasi** | Budget per kategori per bulan, progres realisasi, status over budget, salin budget bulan lalu. |
 
-Tambahan: **Login**, **Akun & Hutang** (dompet, bank, e-wallet, tabungan, aset tetap, hutang) sebagai sumber neraca, dan **Pengaturan** (backup/restore JSON, isi data contoh, hapus data).
+Tambahan: **Login**, **Dompet & Rekening** (menu Atur: tambah dompet, bank, e-wallet, tabungan, emas, piutang, hutang, paylater; ikon, nomor rekening, arsip) (dompet, bank, e-wallet, tabungan, aset tetap, hutang) sebagai sumber neraca, dan **Pengaturan** (backup/restore JSON, isi data contoh, hapus data).
 
 ## 🗂️ Struktur Folder (modular)
 
@@ -105,6 +105,18 @@ Perubahan dari HP anggota keluarga lain masuk otomatis (realtime).
    `service/supabase.config.js`. Jangan pakai kunci `service_role` / `secret`.
 6. Commit & push. Buka aplikasi → login → selesai. Data lama yang ada di HP otomatis dipindahkan
    ke database saat login pertama (kalau database masih kosong).
+
+### Migrasi database
+Setiap ada perubahan struktur database, file SQL baru ditambahkan di `service/database/`.
+Jalankan file yang belum pernah dijalankan, berurutan, di **SQL Editor** Supabase:
+
+| File | Isi |
+|---|---|
+| `schema.sql` | skema awal (sudah termasuk semua migrasi; untuk project baru) |
+| `002_akun_uang.sql` | ikon, nomor rekening, catatan & arsip untuk dompet/rekening |
+
+Kalau aplikasi versi baru dipakai sebelum SQL-nya dijalankan, perubahan tetap aman tersimpan di HP
+(menu Atur menampilkan pesan "Database perlu diperbarui") dan otomatis terkirim setelah SQL dijalankan.
 
 Kalau `supabase.config.js` dibiarkan kosong, aplikasi jalan dalam **mode lokal** (data hanya di HP).
 
