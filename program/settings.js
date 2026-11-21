@@ -57,6 +57,7 @@ export default {
       <div data-db>${dbCard(syncState())}</div>
       <section class="card settings">
         <a class="setting-row" href="#/finance/akun?from=settings"><span>💳</span><div><strong>Dompet & Rekening</strong><small>Tambah / atur tempat penyimpanan uang & hutang</small></div></a>
+        <a class="setting-row" href="#/finance/kategori?from=settings"><span>🗂️</span><div><strong>Kategori Budget</strong><small>Atur kategori pengeluaran & pemasukan sendiri</small></div></a>
         <a class="setting-row" href="#/finance/transfer"><span>🔁</span><div><strong>Transfer</strong><small>Pindah saldo antar dompet / rekening, bayar hutang</small></div></a>
         <button class="setting-row" data-export><span>💾</span><div><strong>Backup data</strong><small>Unduh file cadangan (.json)</small></div></button>
         <label class="setting-row"><input type="file" accept="application/json" hidden data-import /><span>📂</span><div><strong>Pulihkan data</strong><small>Dari file backup${cloud ? ' (menggantikan data di database)' : ''}</small></div></label>

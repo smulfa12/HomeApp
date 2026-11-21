@@ -37,10 +37,120 @@ export const EXPENSE_CATEGORIES = [
   { name: 'Lainnya', emoji: '🧾' },
 ];
 
-export function categoryEmoji(type, name) {
-  const list = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-  return (list.find((c) => c.name === name) || { emoji: type === 'income' ? '✨' : '🧾' }).emoji;
+/* ---------- Kategori (bisa diatur sendiri) ---------- */
+
+const DEFAULT_CATEGORIES = { income: INCOME_CATEGORIES, expense: EXPENSE_CATEGORIES };
+/** Kategori bawaan yang dipakai sistem: tidak bisa dihapus / diganti nama (ikon tetap bisa). */
+const SYSTEM_CATEGORIES = { income: ['Lainnya'], expense: ['Biaya Admin', 'Lainnya'] };
+export const CATEGORY_EMOJIS = [
+  '🛒', '🍜', '☕', '🛵', '🚗', '⛽', '💡', '💧', '📶', '📱', '📚', '🎓', '🩺', '💊', '🏦', '🏠',
+  '🧹', '👕', '💇', '👶', '🍼', '🐱', '🎈', '🎮', '🎬', '✈️', '🤲', '🎁', '🧾', '🏧', '💼', '🏪',
+  '📈', '💝', '✨', '🪙',
+];
+
+const catKey = (type) => `fin.categories.${type}`;
+const findCat = (list, name) => list.find((c) => c.name.toLowerCase() === String(name).trim().toLowerCase());
+export const isSystemCategory = (type, name) => SYSTEM_CATEGORIES[type].includes(name);
+
+/** Daftar kategori pemasukan / pengeluaran sesuai urutan yang diatur user. */
+export function getCategories(type, { includeHidden = false } = {}) {
+  const list = load(catKey(type), DEFAULT_CATEGORIES[type]);
+  return includeHidden ? list : list.filter((c) => !c.hidden);
 }
+
+const writeCategories = (type, list) => save(catKey(type), list.map(({ name, emoji, hidden }) => ({ name, emoji, ...(hidden ? { hidden: true } : {}) })));
+
+export function categoryEmoji(type, name) {
+  return (findCat(getCategories(type, { includeHidden: true }), name) || { emoji: type === 'income' ? '✨' : '🧾' }).emoji;
+}
+
+export const categoryUsage = (type, name) => transactions.filter((t) => t.type === type && t.category === name).length;
+
+export function addCategory(type, { name, emoji }) {
+  const clean = (name || '').trim();
+  if (!clean) throw new Error('Nama kategori wajib diisi');
+  const list = getCategories(type, { includeHidden: true });
+  if (findCat(list, clean)) throw new Error(`Kategori "${clean}" sudah ada`);
+  // sisipkan sebelum "Lainnya" supaya "Lainnya" tetap di akhir
+  const idx = list.findIndex((c) => c.name === 'Lainnya');
+  const item = { name: clean, emoji: emoji || '🏷️' };
+  idx < 0 ? list.push(item) : list.splice(idx, 0, item);
+  writeCategories(type, list);
+  return item;
+}
+
+/** Ubah nama / ikon. Ganti nama → transaksi & budget lama ikut pindah ke nama baru. */
+export function updateCategory(type, oldName, { name, emoji }) {
+  const list = getCategories(type, { includeHidden: true });
+  const cat = findCat(list, oldName);
+  if (!cat) throw new Error('Kategori tidak ditemukan');
+  const newName = (name || '').trim() || cat.name;
+  if (newName !== cat.name) {
+    if (isSystemCategory(type, cat.name)) throw new Error(`"${cat.name}" dipakai sistem, namanya tidak bisa diganti`);
+    if (findCat(list.filter((c) => c !== cat), newName)) throw new Error(`Kategori "${newName}" sudah ada`);
+    transactions.filter((t) => t.type === type && t.category === cat.name).forEach((t) => transactions.update(t.id, { category: newName }));
+    if (type === 'expense') {
+      const all = load('fin.budgets', {});
+      let changed = false;
+      Object.values(all).forEach((month) => {
+        if (cat.name in month) {
+          month[newName] = (month[newName] || 0) + month[cat.name];
+          delete month[cat.name];
+          changed = true;
+        }
+      });
+      if (changed) save('fin.budgets', all);
+    }
+    cat.name = newName;
+  }
+  if (emoji) cat.emoji = emoji;
+  writeCategories(type, list);
+  return cat;
+}
+
+export function setCategoryHidden(type, name, hidden) {
+  const list = getCategories(type, { includeHidden: true });
+  const cat = findCat(list, name);
+  if (!cat) return;
+  if (hidden && list.filter((c) => !c.hidden).length <= 1) throw new Error('Minimal harus ada 1 kategori aktif');
+  cat.hidden = hidden;
+  writeCategories(type, list);
+}
+
+/** Hapus kategori. Ditolak bila sudah dipakai transaksi (sembunyikan saja). */
+export function deleteCategory(type, name) {
+  if (isSystemCategory(type, name)) throw new Error(`"${name}" dipakai sistem, tidak bisa dihapus`);
+  const n = categoryUsage(type, name);
+  if (n) throw new Error(`Dipakai di ${n} transaksi. Sembunyikan saja supaya laporan lama tetap utuh.`);
+  const list = getCategories(type, { includeHidden: true }).filter((c) => c.name !== name);
+  if (!list.filter((c) => !c.hidden).length) throw new Error('Minimal harus ada 1 kategori aktif');
+  writeCategories(type, list);
+  if (type === 'expense') {
+    const all = load('fin.budgets', {});
+    let changed = false;
+    Object.values(all).forEach((month) => {
+      if (name in month) {
+        delete month[name];
+        changed = true;
+      }
+    });
+    if (changed) save('fin.budgets', all);
+  }
+}
+
+/** Geser urutan kategori (dir -1 = naik, 1 = turun), melompati kategori yang disembunyikan. */
+export function moveCategory(type, name, dir) {
+  const list = getCategories(type, { includeHidden: true });
+  const i = list.findIndex((c) => c.name === name);
+  if (i < 0) return;
+  let j = i + dir;
+  while (j >= 0 && j < list.length && list[j].hidden) j += dir;
+  if (j < 0 || j >= list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
+  writeCategories(type, list);
+}
+
+export const resetCategories = (type) => writeCategories(type, DEFAULT_CATEGORIES[type]);
 
 /* ---------- Akun / tempat penyimpanan uang ---------- */
 

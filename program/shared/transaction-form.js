@@ -6,8 +6,8 @@ import { today, parseNumber } from '../../service/format.service.js';
 import * as fin from '../../service/finance.service.js';
 
 export function transactionFormHtml(type, { amount = '', date = today(), note = '', category } = {}) {
-  const cats = type === 'income' ? fin.INCOME_CATEGORIES : fin.EXPENSE_CATEGORIES;
-  const selected = category || cats[0].name;
+  const cats = fin.getCategories(type);
+  const selected = cats.some((c) => c.name === category) ? category : cats[0].name;
   const tone = type === 'income' ? 'mint' : 'peach';
   return `
     <form class="card form" data-tx-form autocomplete="off">
@@ -19,7 +19,7 @@ export function transactionFormHtml(type, { amount = '', date = today(), note = 
         </div>
       </label>
       <div class="field">
-        <span>Kategori</span>
+        <span class="row between">Kategori <a class="link small" href="#/finance/kategori?type=${type}">⚙️ Atur kategori</a></span>
         <div class="cat-grid">
           ${cats
             .map(
