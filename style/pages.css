@@ -441,3 +441,11 @@ a.setting-row { color: inherit; }
 .cat-row__move .icon-btn:disabled { opacity: 0.25; }
 .cat-preview { display: grid; place-items: center; }
 .cat-preview span { width: 72px; height: 72px; display: grid; place-items: center; border-radius: 22px; background: var(--accent-soft); font-size: 36px; }
+
+/* ---------- Keranjang belanja ---------- */
+.cart-bar { margin-top: 4px; }
+.cart-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.cart-list li { display: flex; align-items: center; gap: 10px; }
+.cart-list strong { display: block; font-size: 14px; }
+.cart-list small { color: var(--muted); font-size: 12px; }
+.cart-price { width: 130px; flex: none; }

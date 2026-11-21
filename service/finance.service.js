@@ -279,6 +279,24 @@ export function addTransaction({ type, amount, category, accountId, date, note, 
 }
 
 export const deleteTransaction = (id) => transactions.remove(id);
+export const getTransaction = (id) => transactions.get(id);
+
+/** Ubah pemasukan / pengeluaran (nominal, kategori, akun, tanggal, catatan). */
+export function updateTransaction(id, { amount, category, accountId, date, note }) {
+  const tx = transactions.get(id);
+  if (!tx) throw new Error('Transaksi tidak ditemukan');
+  if (tx.type === 'transfer') throw new Error('Ubah transfer lewat menu Transfer');
+  if (tx.refId) throw new Error('Ini biaya admin transfer — ubah lewat menu Transfer');
+  const n = Number(amount);
+  if (!n || n <= 0) throw new Error('Nominal harus lebih dari 0');
+  return transactions.update(id, {
+    amount: n,
+    category: category || tx.category,
+    accountId: accountId || tx.accountId,
+    date: date || tx.date,
+    note: (note || '').trim(),
+  });
+}
 
 export function listTransactions({ type, from = '0000-01-01', to = '9999-12-31' } = {}) {
   return transactions
@@ -347,6 +365,35 @@ export function listTransfers({ from = '0000-01-01', to = '9999-12-31' } = {}) {
     .filter((t) => t.type === 'transfer' && t.date >= from && t.date <= to)
     .map((t) => ({ ...t, fee: all.filter((x) => x.refId === t.id).reduce((s, x) => s + x.amount, 0) }))
     .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+}
+
+/** Ubah transfer; biaya admin ikut disesuaikan (dibuat / diubah / dihapus). */
+export function updateTransfer(id, { fromId, toId, amount, fee = 0, date, note = '' }) {
+  const tf = transactions.get(id);
+  if (!tf || tf.type !== 'transfer') throw new Error('Transfer tidak ditemukan');
+  const n = Number(amount);
+  const f = Number(fee) || 0;
+  if (!fromId || !toId) throw new Error('Pilih akun asal dan tujuan');
+  if (fromId === toId) throw new Error('Akun asal dan tujuan tidak boleh sama');
+  if (!n || n <= 0) throw new Error('Nominal harus lebih dari 0');
+  if (f < 0) throw new Error('Biaya admin tidak valid');
+  const to = accounts.get(toId);
+  if (!accounts.get(fromId) || !to) throw new Error('Akun tidak ditemukan');
+
+  const updated = transactions.update(id, { amount: n, accountId: fromId, toAccountId: toId, date: date || tf.date, note: note.trim() });
+  const fees = transactions.filter((t) => t.refId === id);
+  if (f > 0) {
+    const patch = { amount: f, accountId: fromId, date: updated.date, note: `Biaya transfer ke ${to.name}` };
+    if (fees.length) {
+      transactions.update(fees[0].id, patch);
+      fees.slice(1).forEach((t) => transactions.remove(t.id));
+    } else {
+      transactions.add({ type: 'expense', category: 'Biaya Admin', toAccountId: '', source: 'transfer', refId: id, ...patch });
+    }
+  } else {
+    fees.forEach((t) => transactions.remove(t.id));
+  }
+  return updated;
 }
 
 /** Hapus transfer beserta biaya adminnya. */

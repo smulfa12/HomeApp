@@ -3,7 +3,7 @@
  * Memindahkan saldo tanpa dihitung sebagai pemasukan / pengeluaran.
  * Bisa juga untuk bayar hutang / kartu kredit atau memakai paylater.
  */
-import { pageHeader, esc, bindMoneyInput, toast, confirmDialog, periodFilter, emptyState } from '../../service/ui.service.js';
+import { pageHeader, esc, bindMoneyInput, toast, confirmDialog, periodFilter, emptyState, openSheet } from '../../service/ui.service.js';
 import { rupiah, parseNumber, today, dateLabel } from '../../service/format.service.js';
 import * as fin from '../../service/finance.service.js';
 
@@ -14,7 +14,9 @@ function accountOptions(selected, excludeId) {
           .map((a) => `<option value="${a.id}" ${a.id === selected ? 'selected' : ''} ${a.id === excludeId ? 'disabled' : ''}>${fin.accountIcon(a)} ${esc(a.name)}</option>`)
           .join('')}</optgroup>`
       : '';
-  return group('Uang & Aset', fin.listAccounts('asset')) + group('Hutang & Cicilan', fin.listAccounts('liability'));
+  // akun arsip hanya muncul bila sedang dipilih (mengedit transfer lama)
+  const list = (type) => fin.listAccounts(type, { includeArchived: true }).filter((a) => !a.archived || a.id === selected);
+  return group('Uang & Aset', list('asset')) + group('Hutang & Cicilan', list('liability'));
 }
 
 export default {
@@ -161,27 +163,78 @@ export default {
         ? `<ul class="tx-list">${rows
             .map(
               (t) => `
-            <li>
+            <li class="tx-list__row" data-edit="${t.id}" role="button" tabindex="0">
               <span class="tx-list__icon tone-sky">🔁</span>
               <div class="grow">
                 <div class="tx-list__title tf-route">${name(t.accountId)} → ${name(t.toAccountId)}</div>
                 <div class="muted small">${dateLabel(t.date)} · ${fin.transferKind(fin.getAccount(t.accountId), fin.getAccount(t.toAccountId))}${t.fee ? ` · admin ${rupiah(t.fee)}` : ''}${t.note ? ` · ${esc(t.note)}` : ''}</div>
               </div>
               <div class="tx-list__amt text-sky">${rupiah(t.amount)}</div>
-              <button class="icon-btn icon-btn--plain icon-btn--sm" data-del="${t.id}" aria-label="Hapus">🗑️</button>
+              <span class="tx-list__edit" aria-hidden="true">✏️</span>
             </li>`
             )
             .join('')}</ul>`
         : emptyState('🔁', 'Belum ada transfer', 'Transfer pada periode ini akan muncul di sini.');
-      history.querySelectorAll('[data-del]').forEach((b) =>
-        b.addEventListener('click', async () => {
-          if (!(await confirmDialog('Hapus transfer ini? Saldo kedua akun akan kembali seperti semula.', { okText: 'Hapus', danger: true }))) return;
-          fin.deleteTransfer(b.dataset.del);
-          toast('Transfer dihapus');
+      history.querySelectorAll('[data-edit]').forEach((row) => {
+        const open = () => editTransfer(rows.find((t) => t.id === row.dataset.edit));
+        row.addEventListener('click', open);
+        row.addEventListener('keydown', (e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), open()));
+      });
+    };
+
+    const editTransfer = (t) => {
+      let eFrom = t.accountId;
+      let eTo = t.toAccountId;
+      const sheet = openSheet({
+        title: 'Edit Transfer',
+        body: `
+          <form class="form" data-tf-edit autocomplete="off">
+            <label class="field"><span>Dari</span><select class="input" name="from"></select></label>
+            <label class="field"><span>Ke</span><select class="input" name="to"></select></label>
+            <label class="field"><span>Nominal</span>
+              <div class="money tone-sky"><span>Rp</span><input name="amount" inputmode="numeric" required value="${Number(t.amount).toLocaleString('id-ID')}" /></div>
+            </label>
+            <div class="grid-2">
+              <label class="field"><span>Biaya admin</span>
+                <div class="money money--sm"><span>Rp</span><input name="fee" inputmode="numeric" placeholder="0" value="${t.fee ? Number(t.fee).toLocaleString('id-ID') : ''}" /></div>
+              </label>
+              <label class="field"><span>Tanggal</span><input class="input" type="date" name="date" value="${esc(t.date)}" required /></label>
+            </div>
+            <label class="field"><span>Catatan</span><input class="input" name="note" maxlength="80" value="${esc(t.note || '')}" /></label>
+            <button class="btn btn--sky btn--block" type="submit">💾 Simpan Perubahan</button>
+            <button class="btn btn--danger-soft btn--block" type="button" data-del>🗑️ Hapus Transfer</button>
+          </form>`,
+      });
+      const f = sheet.el.querySelector('[data-tf-edit]');
+      const fill = () => {
+        f.from.innerHTML = accountOptions(eFrom, eTo);
+        f.to.innerHTML = accountOptions(eTo, eFrom);
+      };
+      fill();
+      f.from.addEventListener('change', () => ((eFrom = f.from.value), fill()));
+      f.to.addEventListener('change', () => ((eTo = f.to.value), fill()));
+      bindMoneyInput(f.amount);
+      bindMoneyInput(f.fee);
+      f.addEventListener('submit', (e) => {
+        e.preventDefault();
+        try {
+          fin.updateTransfer(t.id, { fromId: eFrom, toId: eTo, amount: parseNumber(f.amount.value), fee: parseNumber(f.fee.value), date: f.date.value, note: f.note.value });
+          sheet.close();
+          toast('✅ Transfer diperbarui');
           syncSelects();
           drawHistory();
-        })
-      );
+        } catch (err) {
+          toast(err.message, 'error');
+        }
+      });
+      f.querySelector('[data-del]').addEventListener('click', async () => {
+        sheet.close();
+        if (!(await confirmDialog('Hapus transfer ini? Saldo kedua akun akan kembali seperti semula.', { okText: 'Hapus', danger: true }))) return;
+        fin.deleteTransfer(t.id);
+        toast('Transfer dihapus');
+        syncSelects();
+        drawHistory();
+      });
     };
 
     syncSelects();

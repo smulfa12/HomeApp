@@ -523,3 +523,8 @@ select.input {
   .celebrate span { display: none; }
 }
 .chip--link { border-style: dashed; color: var(--accent); }
+.tx-list__row { cursor: pointer; border-radius: 12px; }
+.tx-list__row:active { background: var(--bg); }
+.tx-list__row:focus-visible { outline: 3px solid var(--accent); }
+.tx-list__edit { font-size: 13px; opacity: 0.55; }
+.danger-word { color: var(--danger); letter-spacing: 1px; }

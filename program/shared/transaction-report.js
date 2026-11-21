@@ -2,7 +2,8 @@
  * Halaman laporan transaksi per periode (dipakai laporan pemasukan
  * & pengeluaran supaya tidak menulis kode yang sama dua kali).
  */
-import { pageHeader, esc, periodFilter, barList, emptyState, confirmDialog, toast } from '../../service/ui.service.js';
+import { pageHeader, esc, periodFilter, barList, emptyState } from '../../service/ui.service.js';
+import { openTransactionEditor } from './transaction-form.js';
 import { rupiah, dateLabel } from '../../service/format.service.js';
 import * as fin from '../../service/finance.service.js';
 
@@ -44,34 +45,30 @@ export function createReportPage({ path, type, title, emoji, tone, addHref }) {
           </section>
 
           <section class="card">
-            <div class="card__head"><h2>Rincian transaksi</h2></div>
+            <div class="card__head"><h2>Rincian transaksi</h2><span class="muted small">ketuk untuk ubah</span></div>
             <ul class="tx-list">
               ${rows
                 .map(
                   (t) => `
-                <li>
+                <li class="tx-list__row" data-edit="${t.id}" role="button" tabindex="0">
                   <span class="tx-list__icon tone-${tone}">${fin.categoryEmoji(type, t.category)}</span>
                   <div class="grow">
                     <div class="tx-list__title">${esc(t.note || t.category)}</div>
-                    <div class="muted small">${dateLabel(t.date)} · ${esc(t.category)}${accounts[t.accountId] ? ` · ${esc(accounts[t.accountId])}` : ''}${t.source === 'scan' ? ' · 🧾 scan' : ''}</div>
+                    <div class="muted small">${dateLabel(t.date)} · ${esc(t.category)}${accounts[t.accountId] ? ` · ${esc(accounts[t.accountId])}` : ''}${t.source === 'scan' ? ' · 🧾 scan' : ''}${t.source === 'belanja' ? ' · 🛒 belanja' : ''}${t.refId ? ' · 🔁 transfer' : ''}</div>
                   </div>
                   <div class="tx-list__amt text-${tone}">${type === 'income' ? '+' : '−'}${rupiah(t.amount)}</div>
-                  <button class="icon-btn icon-btn--plain icon-btn--sm" data-del="${t.id}" aria-label="Hapus">🗑️</button>
+                  <span class="tx-list__edit" aria-hidden="true">✏️</span>
                 </li>`
                 )
                 .join('')}
             </ul>
           </section>`;
 
-        content.querySelectorAll('[data-del]').forEach((b) =>
-          b.addEventListener('click', async () => {
-            if (await confirmDialog('Hapus transaksi ini?', { okText: 'Hapus', danger: true })) {
-              fin.deleteTransaction(b.dataset.del);
-              toast('Transaksi dihapus');
-              draw();
-            }
-          })
-        );
+        content.querySelectorAll('[data-edit]').forEach((row) => {
+          const open = () => openTransactionEditor(row.dataset.edit, { onDone: draw });
+          row.addEventListener('click', open);
+          row.addEventListener('keydown', (e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), open()));
+        });
       };
 
       periodFilter(el.querySelector('[data-period]'), (r) => {

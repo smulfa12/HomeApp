@@ -264,3 +264,34 @@ export function summary() {
     locations: Object.keys(groupByLocation()).length,
   };
 }
+
+/* ---------- Keranjang belanja (sementara, hanya di HP ini) ---------- */
+// Barang yang dicentang "sudah dibeli" dikumpulkan di sini sampai dicatat
+// sebagai pengeluaran (atau dilewati). Tidak ikut sinkron ke database.
+const CART_KEY = 'rumahku-belanja-cart';
+
+export function getCart() {
+  try {
+    return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+export function addToCart(item, qty) {
+  const cart = getCart();
+  const row = cart.find((c) => c.itemId === item.id);
+  if (row) row.qty += Number(qty);
+  else cart.push({ itemId: item.id, name: item.name, unit: item.unit, qty: Number(qty), price: Number(item.price) || 0 });
+  localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  return cart;
+}
+
+export const clearCart = () => localStorage.removeItem(CART_KEY);
+export const cartTotal = (cart = getCart()) => cart.reduce((s, c) => s + c.qty * (c.price || 0), 0);
+
+/** Simpan harga satuan terbaru (dari struk belanja) untuk estimasi berikutnya. */
+export function updateItemPrice(id, price) {
+  const item = items.get(id);
+  if (item && Number(price) > 0 && Number(price) !== Number(item.price)) items.update(id, { price: Number(price) });
+}
