@@ -6,7 +6,6 @@ import { pageHeader, esc, emptyState } from '../../service/ui.service.js';
 import * as inv from '../../service/inventory.service.js';
 import { itemCard } from '../shared/item-card.js';
 
-const LOC_EMOJI = { Dapur: '🍳', Kulkas: '🧊', Freezer: '❄️', 'Lemari Makan': '🥫', 'Kamar Mandi': '🛁', Gudang: '📦', 'Kamar Tidur': '🛏️' };
 const TONES = ['mint', 'peach', 'sky', 'lavender', 'butter', 'rose'];
 
 export default {
@@ -14,7 +13,9 @@ export default {
   title: 'Barang per Lokasi',
   render(el, params) {
     const groups = inv.groupByLocation();
-    const names = Object.keys(groups).sort();
+    // urutan mengikuti menu Atur Lokasi; "Belum ditentukan" di akhir
+    const order = inv.getLocations();
+    const names = Object.keys(groups).sort((a, b) => (order.indexOf(a) + 1 || 999) - (order.indexOf(b) + 1 || 999));
     let active = params.loc && groups[params.loc] ? params.loc : null;
     let query = '';
 
@@ -29,13 +30,14 @@ export default {
             .map(
               (n, idx) => `
             <button class="loc-tile tone-${TONES[idx % TONES.length]}" data-loc="${esc(n)}">
-              <span class="loc-tile__emoji">${LOC_EMOJI[n] || '📍'}</span>
+              <span class="loc-tile__emoji">${esc(inv.locationEmoji(n))}</span>
               <span class="loc-tile__name">${esc(n)}</span>
               <span class="loc-tile__count">${groups[n].length} barang</span>
             </button>`
             )
             .join('')}
         </div>
+        <a class="link small" href="#/inventory/lokasi-atur?from=lokasi">⚙️ Atur lokasi (tambah / ganti nama / urutkan)</a>
         <input class="input" data-search placeholder="🔍 Cari barang…" />
         <div data-groups></div>`
       }`;
@@ -51,7 +53,7 @@ export default {
           if (!rows.length) return '';
           return `
           <section class="card">
-            <div class="card__head"><h2>${LOC_EMOJI[n] || '📍'} ${esc(n)}</h2><span class="muted small">${rows.length} barang</span></div>
+            <div class="card__head"><h2>${esc(inv.locationEmoji(n))} ${esc(n)}</h2><span class="muted small">${rows.length} barang</span></div>
             <div class="list">${rows.map((i) => itemCard(i, { showLocation: false, href: `#/inventory/input?id=${i.id}` })).join('')}</div>
           </section>`;
         })

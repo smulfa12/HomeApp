@@ -83,7 +83,8 @@ export default {
           <datalist id="loc-list">${options(inv.getLocations())}</datalist>
         </label>
         <div class="chips chips--wrap" data-loc-chips>
-          ${inv.getLocations().map((l) => `<button type="button" class="chip" data-loc="${esc(l)}">📍 ${esc(l)}</button>`).join('')}
+          ${inv.getLocations().map((l) => `<button type="button" class="chip" data-loc="${esc(l)}">${esc(inv.locationEmoji(l))} ${esc(l)}</button>`).join('')}
+          <a class="chip chip--link" href="#/inventory/lokasi-atur?from=input">⚙️ Atur lokasi</a>
         </div>
 
         <button class="btn btn--primary btn--block" type="submit">💾 Simpan Barang</button>

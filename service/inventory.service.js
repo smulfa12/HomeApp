@@ -29,15 +29,89 @@ const DEFAULT_UNITS = ['pcs', 'bungkus', 'botol', 'kaleng', 'kg', 'gram', 'liter
 export const getCategories = () => load('inv.categories', DEFAULT_CATEGORIES);
 export const getUnits = () => DEFAULT_UNITS;
 
+/* ---------- Lokasi penyimpanan (bisa diatur sendiri) ---------- */
+// Daftar nama disimpan di 'inv.locations' (array string, format lama tetap),
+// ikon per lokasi di 'inv.locationIcons' ({ nama: emoji }).
+
+const DEFAULT_LOCATION_ICONS = { Dapur: '🍳', Kulkas: '🧊', Freezer: '❄️', 'Lemari Makan': '🥫', 'Kamar Mandi': '🛁', Gudang: '📦', 'Kamar Tidur': '🛏️' };
+export const LOCATION_EMOJIS = [
+  '🍳', '🧊', '❄️', '🥫', '🛁', '📦', '🛏️', '🛋️', '🚪', '🧺', '🧰', '🚗', '🌿', '👕', '💊', '🧸', '📚', '🏠',
+];
+export const NO_LOCATION = 'Belum ditentukan';
+
+const savedLocations = () => load('inv.locations', DEFAULT_LOCATIONS);
+const locationIcons = () => ({ ...DEFAULT_LOCATION_ICONS, ...load('inv.locationIcons', {}) });
+const sameName = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+
+/** Semua lokasi sesuai urutan yang diatur user (+ lokasi yang terlanjur dipakai barang). */
 export function getLocations() {
-  const saved = load('inv.locations', DEFAULT_LOCATIONS);
+  const saved = savedLocations();
   const used = items.all().map((i) => i.location).filter(Boolean);
   return [...new Set([...saved, ...used])];
 }
 
-export function addLocation(name) {
-  const list = load('inv.locations', DEFAULT_LOCATIONS);
-  if (name && !list.includes(name)) save('inv.locations', [...list, name]);
+export const locationEmoji = (name) => (name === NO_LOCATION ? '❔' : locationIcons()[name] || '📍');
+export const locationItemCount = (name) => items.filter((i) => (i.location || NO_LOCATION) === name).length;
+
+/** Dipakai saat input barang: lokasi baru otomatis masuk daftar (tanpa validasi). */
+export function ensureLocation(name) {
+  const list = savedLocations();
+  if (name && !list.some((l) => sameName(l, name))) save('inv.locations', [...list, name]);
+}
+
+export function addLocation(name, emoji) {
+  const clean = (name || '').trim();
+  if (!clean) throw new Error('Nama lokasi wajib diisi');
+  if (sameName(clean, NO_LOCATION)) throw new Error('Nama ini dipakai sistem');
+  if (getLocations().some((l) => sameName(l, clean))) throw new Error(`Lokasi "${clean}" sudah ada`);
+  save('inv.locations', [...getLocations(), clean]);
+  if (emoji) save('inv.locationIcons', { ...load('inv.locationIcons', {}), [clean]: emoji });
+}
+
+/** Ganti nama / ikon. Ganti nama → semua barang di lokasi itu ikut pindah. */
+export function updateLocation(oldName, { name, emoji }) {
+  const newName = (name || '').trim() || oldName;
+  const list = getLocations();
+  const idx = list.indexOf(oldName);
+  if (idx < 0) throw new Error('Lokasi tidak ditemukan');
+  const icons = load('inv.locationIcons', {});
+  if (newName !== oldName) {
+    if (sameName(newName, NO_LOCATION)) throw new Error('Nama ini dipakai sistem');
+    if (list.some((l, i) => i !== idx && sameName(l, newName))) throw new Error(`Lokasi "${newName}" sudah ada`);
+    items.filter((i) => i.location === oldName).forEach((i) => items.update(i.id, { location: newName }));
+    list[idx] = newName;
+    save('inv.locations', list);
+    icons[newName] = emoji || locationIcons()[oldName] || '📍';
+    delete icons[oldName];
+  } else if (emoji) {
+    icons[oldName] = emoji;
+  }
+  save('inv.locationIcons', icons);
+}
+
+/** Hapus lokasi. Bila masih ada barang: wajib pilih lokasi tujuan (`moveTo`). */
+export function deleteLocation(name, moveTo) {
+  const inside = items.filter((i) => i.location === name);
+  if (inside.length && !moveTo) throw new Error(`Masih ada ${inside.length} barang di ${name}. Pilih lokasi tujuan dulu.`);
+  if (moveTo === name) throw new Error('Lokasi tujuan harus berbeda');
+  inside.forEach((i) => items.update(i.id, { location: moveTo === NO_LOCATION ? '' : moveTo }));
+  if (moveTo && moveTo !== NO_LOCATION) ensureLocation(moveTo);
+  save('inv.locations', getLocations().filter((l) => l !== name));
+  const icons = load('inv.locationIcons', {});
+  if (name in icons) {
+    delete icons[name];
+    save('inv.locationIcons', icons);
+  }
+  return inside.length;
+}
+
+export function moveLocation(name, dir) {
+  const list = getLocations();
+  const i = list.indexOf(name);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
+  save('inv.locations', list);
 }
 
 export function categoryInfo(name) {
@@ -71,7 +145,7 @@ export function saveItem(data) {
     expiry: isPerishable(data.category) ? data.expiry || '' : '',
     price: Number(data.price) || 0,
   };
-  if (clean.location) addLocation(clean.location);
+  if (clean.location) ensureLocation(clean.location);
 
   if (data.id) {
     const prev = items.get(data.id);
@@ -159,7 +233,7 @@ export function shoppingList() {
 export function groupByLocation() {
   const groups = {};
   listItems().forEach((i) => {
-    const key = i.location || 'Belum ditentukan';
+    const key = i.location || NO_LOCATION;
     (groups[key] ||= []).push(i);
   });
   return groups;
