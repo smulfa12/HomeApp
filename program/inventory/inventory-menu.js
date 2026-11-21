@@ -2,14 +2,17 @@
  * Menu Utama Inventory Rumah
  */
 import { pageHeader } from '../../service/ui.service.js';
+import { sessionCount } from '../../service/shopping.service.js';
 import { summary, expiringItems } from '../../service/inventory.service.js';
 import { itemCard } from '../shared/item-card.js';
 
 const MENUS = [
   { href: '#/inventory/input', emoji: '📥', title: 'Input Barang', desc: 'Scan barcode & tambah stok', tone: 'mint' },
   { href: '#/inventory/keluar', emoji: '📤', title: 'Stock Keluar', desc: 'Scan saat barang dipakai', tone: 'peach' },
-  { href: '#/inventory/opname', emoji: '📋', title: 'Stock Opname', desc: 'Hitung stok sebelum belanja', tone: 'sky' },
+  { href: '#/inventory/mode-belanja', emoji: '🛍️', title: 'Mode Belanja', desc: 'Scan saat di supermarket', tone: 'sky', badgeKey: 'cart' },
   { href: '#/inventory/belanja', emoji: '🛒', title: 'Daftar Belanja', desc: 'Stok di bawah minimum', tone: 'rose', badgeKey: 'lowStock' },
+  { href: '#/inventory/opname', emoji: '📋', title: 'Stock Opname', desc: 'Hitung stok sebelum belanja', tone: 'lavender' },
+  { href: '#/inventory/riwayat-belanja', emoji: '🧾', title: 'Riwayat Belanja', desc: 'Log setiap kali belanja', tone: 'butter' },
   { href: '#/inventory/lokasi', emoji: '🗂️', title: 'Barang per Lokasi', desc: 'Lihat isi tiap tempat', tone: 'butter' },
   { href: '#/inventory/lokasi-atur', emoji: '📍', title: 'Atur Lokasi', desc: 'Tambah / ubah tempat simpan', tone: 'mint' },
 ];
@@ -18,7 +21,7 @@ export default {
   path: '/inventory',
   title: 'Inventory Rumah',
   render(el) {
-    const s = summary();
+    const s = { ...summary(), cart: sessionCount() };
     const expiring = expiringItems(7).slice(0, 3);
     el.innerHTML = `
       ${pageHeader({ title: 'Inventory Rumah', subtitle: 'Stok barang rumah tetap terkendali', emoji: '🏠', tone: 'mint' })}

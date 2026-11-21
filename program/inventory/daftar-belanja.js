@@ -1,105 +1,13 @@
 /**
  * 4. Daftar Belanja
- * Semua barang dengan stok < minimum stok. Bisa dicentang saat sudah
- * dibeli (stok otomatis bertambah) dan dibagikan via WhatsApp.
- * Barang yang sudah dibeli masuk keranjang → dicatat sebagai pengeluaran.
+ * Semua barang dengan stok < minimum stok. Centang = masukkan ke keranjang
+ * Mode Belanja (stok bertambah & pengeluaran dicatat saat "Selesai & Bayar").
+ * Bisa dibagikan via WhatsApp.
  */
-import { pageHeader, esc, toast, emptyState, openSheet, bindMoneyInput, options, confirmDialog } from '../../service/ui.service.js';
+import { pageHeader, esc, toast, emptyState } from '../../service/ui.service.js';
 import * as inv from '../../service/inventory.service.js';
-import * as fin from '../../service/finance.service.js';
-import { number, rupiah, dateLabel, today, parseNumber } from '../../service/format.service.js';
-
-/** Sheet untuk mencatat isi keranjang belanja sebagai pengeluaran. */
-function openRecordSheet(onDone) {
-  const cart = inv.getCart();
-  const cats = fin.getCategories('expense');
-  const category = (cats.find((c) => c.name === 'Belanja Dapur') || cats[0]).name;
-  const accounts = fin.listAccounts('asset');
-  const liquid = accounts.filter((a) => fin.LIQUID_GROUPS.includes(a.group));
-  const accountId = (liquid[0] || accounts[0])?.id;
-  const names = cart.map((c) => c.name);
-  const note = `Belanja: ${names.slice(0, 4).join(', ')}${names.length > 4 ? ` +${names.length - 4} lainnya` : ''}`;
-
-  const sheet = openSheet({
-    title: '🧾 Catat Pengeluaran Belanja',
-    body: `
-      <form class="form" data-rec autocomplete="off">
-        <p class="muted small">Isi harga satuan sesuai struk (opsional) — harga ini juga dipakai untuk estimasi belanja berikutnya.</p>
-        <ul class="cart-list">
-          ${cart
-            .map(
-              (c, i) => `
-            <li>
-              <div class="grow"><strong>${esc(c.name)}</strong><small>${number(c.qty)} ${esc(c.unit)} × harga</small></div>
-              <div class="money money--sm cart-price"><span>Rp</span><input data-price="${i}" inputmode="numeric" placeholder="0" value="${c.price ? Number(c.price).toLocaleString('id-ID') : ''}" /></div>
-            </li>`
-            )
-            .join('')}
-        </ul>
-        <label class="field"><span>Total dibayar (sesuai struk)</span>
-          <div class="money tone-peach"><span>Rp</span><input name="total" inputmode="numeric" required placeholder="0" /></div>
-        </label>
-        <div class="grid-2">
-          <label class="field"><span>Kategori</span>
-            <select class="input" name="category">${options(cats, category, { valueKey: 'name', labelKey: (c) => `${c.emoji} ${c.name}` })}</select>
-          </label>
-          <label class="field"><span>Dibayar dari</span>
-            <select class="input" name="accountId">${options(accounts, accountId, { valueKey: 'id', labelKey: (a) => `${fin.accountIcon(a)} ${a.name}` })}</select>
-          </label>
-        </div>
-        <div class="grid-2">
-          <label class="field"><span>Tanggal</span><input class="input" type="date" name="date" value="${today()}" required /></label>
-          <label class="field"><span>Catatan</span><input class="input" name="note" maxlength="80" value="${esc(note)}" /></label>
-        </div>
-        <button class="btn btn--peach btn--block" type="submit">💾 Simpan sebagai Pengeluaran</button>
-        <button class="btn btn--ghost btn--block" type="button" data-skip>Lewati (tidak dicatat)</button>
-      </form>`,
-  });
-
-  const form = sheet.el.querySelector('[data-rec]');
-  const priceInputs = [...form.querySelectorAll('[data-price]')];
-  let totalTouched = false;
-  const recalc = () => {
-    if (totalTouched) return;
-    const sum = priceInputs.reduce((s, inp) => s + cart[inp.dataset.price].qty * parseNumber(inp.value), 0);
-    form.total.value = sum ? sum.toLocaleString('id-ID') : '';
-  };
-  priceInputs.forEach((inp) => {
-    bindMoneyInput(inp);
-    inp.addEventListener('input', recalc);
-  });
-  bindMoneyInput(form.total);
-  form.total.addEventListener('input', () => (totalTouched = true));
-  recalc();
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    try {
-      fin.addTransaction({
-        type: 'expense',
-        amount: parseNumber(form.total.value),
-        category: form.category.value,
-        accountId: form.accountId.value,
-        date: form.date.value,
-        note: form.note.value,
-        source: 'belanja',
-      });
-      priceInputs.forEach((inp) => inv.updateItemPrice(cart[inp.dataset.price].itemId, parseNumber(inp.value)));
-      inv.clearCart();
-      sheet.close();
-      toast(`✅ Pengeluaran ${rupiah(parseNumber(form.total.value))} tercatat`);
-      onDone();
-    } catch (err) {
-      toast(err.message, 'error');
-    }
-  });
-  form.querySelector('[data-skip]').addEventListener('click', async () => {
-    sheet.close();
-    if (!(await confirmDialog('Kosongkan keranjang tanpa mencatat pengeluaran? Stok barang tetap sudah bertambah.', { okText: 'Lewati' }))) return;
-    inv.clearCart();
-    onDone();
-  });
-}
+import * as shop from '../../service/shopping.service.js';
+import { number, rupiah, dateLabel, today } from '../../service/format.service.js';
 
 export default {
   path: '/inventory/belanja',
@@ -148,7 +56,7 @@ export default {
             </section>`
             )
             .join('')}
-          <p class="muted small center">Centang ✓ barang yang sudah dibeli untuk menambah stoknya.</p>`
+          <p class="muted small center">Centang ✓ barang yang sudah diambil → masuk keranjang Mode Belanja. Stok bertambah saat “Selesai & Bayar”.</p>`
         }`;
 
       const text = () =>
@@ -167,29 +75,33 @@ export default {
           toast('Gagal menyalin', 'error');
         }
       });
-      el.querySelectorAll('[data-buy]').forEach((b) =>
+      // Centang = masuk / keluar keranjang Mode Belanja
+      const inCart = new Set(shop.getSession().items.map((i) => i.itemId));
+      el.querySelectorAll('[data-buy]').forEach((b) => {
+        b.classList.toggle('check--on', inCart.has(b.dataset.buy));
         b.addEventListener('click', () => {
           const item = list.find((i) => i.id === b.dataset.buy);
-          b.classList.add('check--on');
-          inv.stockIn(item.id, item.needed, 'Belanja');
-          inv.addToCart(item, item.needed);
-          toast(`✅ ${item.name} +${number(item.needed)} ${item.unit}`);
-          setTimeout(draw, 350);
-        })
-      );
+          if (inCart.has(item.id)) {
+            shop.removeFromSession(item.id);
+            toast(`↩️ ${item.name} dikeluarkan dari keranjang`);
+          } else {
+            shop.addToSession(item, item.needed);
+            toast(`🛒 ${item.name} ×${number(item.needed)} masuk keranjang`);
+          }
+          draw();
+        });
+      });
 
-      // Bar keranjang: barang yang sudah dibeli → catat sebagai pengeluaran
-      const cart = inv.getCart();
-      if (cart.length) {
-        const total = inv.cartTotal(cart);
-        const bar = document.createElement('div');
-        bar.className = 'bottom-bar cart-bar';
-        bar.innerHTML = `
-          <div><small class="muted">🛍️ ${cart.length} barang dibeli</small><strong>${total ? rupiah(total) : 'Rp —'}</strong></div>
-          <button class="btn btn--peach" data-record>🧾 Catat Pengeluaran</button>`;
-        el.appendChild(bar);
-        bar.querySelector('[data-record]').addEventListener('click', () => openRecordSheet(draw));
-      }
+      // Mulai / lanjutkan Mode Belanja
+      const s = shop.getSession();
+      const bar = document.createElement('div');
+      bar.className = 'bottom-bar cart-bar';
+      bar.innerHTML = s.items.length
+        ? `<div><small class="muted">🛒 ${s.items.length} di keranjang</small><strong>${rupiah(shop.sessionTotal(s))}</strong></div>
+           <a class="btn btn--peach" href="#/inventory/mode-belanja">🛍️ Lanjut Belanja</a>`
+        : `<div><small class="muted">Sedang di toko?</small><strong>Mode Belanja</strong></div>
+           <a class="btn btn--peach" href="#/inventory/mode-belanja">🛍️ Mulai Belanja</a>`;
+      el.appendChild(bar);
     };
     draw();
   },

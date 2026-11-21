@@ -15,6 +15,8 @@ Bisa dipasang ke layar utama HP dan tetap jalan tanpa internet (kecuali scan not
 | 4 | **Daftar Belanja** | Barang dengan stok < minimum stok, jumlah yang perlu dibeli, estimasi biaya, kirim ke WhatsApp / salin, centang = stok bertambah. |
 | 5 | **Barang per Lokasi** | Barang dikelompokkan per tempat (Dapur, Kulkas, Gudang, …) + peringatan kadaluarsa. |
 | 6 | **Atur Lokasi** | Kelola sendiri tempat penyimpanan: tambah, ganti nama & ikon (barang ikut pindah), urutkan, hapus (barang dipindahkan ke lokasi lain). Disimpan di `app_settings` (tidak perlu SQL). |
+| 7 | **Mode Belanja** | Dipakai di supermarket: scan barcode terus-menerus / input manual / ambil dari Daftar Belanja → keranjang (jumlah, harga, total berjalan) → Selesai & Bayar: stok bertambah, pengeluaran tercatat, tersimpan di Riwayat Belanja. |
+| 8 | **Riwayat Belanja** | Log setiap belanja per periode: toko, isi barang × harga, total, dibayar dari; belanja ulang barang yang sama. |
 
 ### 💰 Menu Utama Financial Rumah
 | # | Menu | Isi |
@@ -120,6 +122,7 @@ Jalankan file yang belum pernah dijalankan, berurutan, di **SQL Editor** Supabas
 | `002_akun_uang.sql` | ikon, nomor rekening, catatan & arsip untuk dompet/rekening |
 | `003_transfer.sql` | transfer antar dompet / rekening (+ biaya admin) |
 | `004_target_tabungan.sql` | target tabungan (dikaitkan ke satu / beberapa rekening) |
+| `005_riwayat_belanja.sql` | riwayat belanja dari Mode Belanja |
 
 Kalau aplikasi versi baru dipakai sebelum SQL-nya dijalankan, perubahan tetap aman tersimpan di HP
 (menu Atur menampilkan pesan "Database perlu diperbarui") dan otomatis terkirim setelah SQL dijalankan.
