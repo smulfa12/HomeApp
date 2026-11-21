@@ -226,3 +226,40 @@ export function celebrate(message) {
   layer.addEventListener('click', () => layer.remove());
   setTimeout(() => layer.remove(), 3200);
 }
+
+/**
+ * Konfirmasi untuk tindakan berbahaya: user wajib mengetik `word` (mis. HAPUS)
+ * sebelum tombol aktif. Resolve true / false.
+ */
+export function confirmTyped(message, word, { okText = 'Lanjutkan', detail = '' } = {}) {
+  return new Promise((resolve) => {
+    const sheet = openSheet({
+      title: '⚠️ Tindakan berbahaya',
+      body: `
+        <p class="confirm-text">${esc(message)}</p>
+        ${detail ? `<p class="muted small">${esc(detail)}</p>` : ''}
+        <label class="field">
+          <span>Ketik <b class="danger-word">${esc(word)}</b> untuk melanjutkan</span>
+          <input class="input" data-typed autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="${esc(word)}" />
+        </label>
+        <div class="row gap-sm">
+          <button class="btn btn--ghost grow" data-no>Batal</button>
+          <button class="btn btn--danger grow" data-yes disabled>${esc(okText)}</button>
+        </div>`,
+      onClose: () => done(false),
+    });
+    let finished = false;
+    const done = (v) => {
+      if (finished) return;
+      finished = true;
+      sheet.close();
+      resolve(v);
+    };
+    const input = sheet.el.querySelector('[data-typed]');
+    const yes = sheet.el.querySelector('[data-yes]');
+    input.addEventListener('input', () => (yes.disabled = input.value.trim().toUpperCase() !== word.toUpperCase()));
+    sheet.el.querySelector('[data-no]').onclick = () => done(false);
+    yes.onclick = () => !yes.disabled && done(true);
+    setTimeout(() => input.focus(), 300);
+  });
+}

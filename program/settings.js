@@ -1,7 +1,7 @@
 /**
  * Pengaturan — status database, backup / restore, data contoh, reset.
  */
-import { pageHeader, toast, confirmDialog, esc } from '../service/ui.service.js';
+import { pageHeader, toast, confirmDialog, confirmTyped, esc } from '../service/ui.service.js';
 import { exportAll, importAll, clearAll } from '../service/storage.service.js';
 import { loadDemoData } from '../service/demo.service.js';
 import { today } from '../service/format.service.js';
@@ -93,13 +93,20 @@ export default {
       bindDb();
     });
 
-    el.querySelector('[data-export]').addEventListener('click', () => {
+    /** Unduh backup JSON. Dipanggil manual & otomatis sebelum tindakan berbahaya. */
+    const downloadBackup = (suffix = '') => {
       const blob = new Blob([JSON.stringify(exportAll(), null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `rumahku-backup-${today()}.json`;
+      a.download = `rumahku-backup-${today()}${suffix}.json`;
       a.click();
-      URL.revokeObjectURL(a.href);
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    };
+    const who = cloud ? ' untuk SEMUA anggota keluarga (di database)' : ' di HP ini';
+    const AUTO_BACKUP = 'Sebelum dilanjutkan, file backup data sekarang otomatis diunduh — simpan baik-baik untuk jaga-jaga.';
+
+    el.querySelector('[data-export]').addEventListener('click', () => {
+      downloadBackup();
       toast('💾 Backup diunduh');
     });
 
@@ -108,7 +115,11 @@ export default {
       if (!file) return;
       try {
         const payload = JSON.parse(await file.text());
-        if (!(await confirmDialog('Data sekarang akan diganti dengan isi backup. Lanjutkan?', { okText: 'Pulihkan' }))) return;
+        if (!payload || typeof payload.data !== 'object') throw new Error('Format backup tidak dikenali');
+        const ok = await confirmTyped(`Semua data sekarang akan DIGANTI dengan isi file backup${who}.`, 'PULIHKAN', { okText: 'Pulihkan', detail: AUTO_BACKUP });
+        e.target.value = '';
+        if (!ok) return;
+        downloadBackup('-sebelum-pulihkan');
         importAll(payload);
         toast('✅ Data dipulihkan');
         navigate('/');
@@ -118,17 +129,24 @@ export default {
     });
 
     el.querySelector('[data-demo]').addEventListener('click', async () => {
-      const msg = cloud
-        ? 'Data contoh akan MENGGANTIKAN semua data di database (terlihat oleh semua anggota keluarga). Lanjutkan?'
-        : 'Data contoh akan menggantikan data yang ada. Lanjutkan?';
-      if (!(await confirmDialog(msg, { okText: 'Isi Contoh', danger: cloud }))) return;
+      const ok = await confirmTyped(`Data contoh akan MENGGANTIKAN semua data barang & keuangan${who}. Data asli kamu akan hilang.`, 'CONTOH', {
+        okText: 'Isi Data Contoh',
+        detail: AUTO_BACKUP,
+      });
+      if (!ok) return;
+      downloadBackup('-sebelum-data-contoh');
       loadDemoData();
       toast('🧸 Data contoh dimuat');
       navigate('/');
     });
 
     el.querySelector('[data-reset]').addEventListener('click', async () => {
-      if (!(await confirmDialog('Semua data inventory & keuangan akan dihapus permanen.', { okText: 'Hapus Semua', danger: true }))) return;
+      const ok = await confirmTyped(`Semua data inventory & keuangan akan DIHAPUS PERMANEN${who}.`, 'HAPUS', {
+        okText: 'Hapus Semua',
+        detail: AUTO_BACKUP,
+      });
+      if (!ok) return;
+      downloadBackup('-sebelum-hapus');
       clearAll();
       toast('Semua data dihapus');
       navigate('/');
