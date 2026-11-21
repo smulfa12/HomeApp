@@ -33,7 +33,7 @@ export const TABLES = {
 };
 
 /** Pengaturan yang disimpan di tabel app_settings. */
-export const SETTING_KEYS = ['inv.locations', 'inv.lastOpname', 'fin.budgets', 'inv.categories', 'fin.categories.expense', 'fin.categories.income'];
+export const SETTING_KEYS = ['inv.locations', 'inv.lastOpname', 'fin.budgets', 'inv.categories', 'fin.categories.expense', 'fin.categories.income', 'inv.locationIcons'];
 
 export const isConfigured = () => Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 

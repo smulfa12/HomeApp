@@ -11,6 +11,7 @@ const MENUS = [
   { href: '#/inventory/opname', emoji: '📋', title: 'Stock Opname', desc: 'Hitung stok sebelum belanja', tone: 'sky' },
   { href: '#/inventory/belanja', emoji: '🛒', title: 'Daftar Belanja', desc: 'Stok di bawah minimum', tone: 'rose', badgeKey: 'lowStock' },
   { href: '#/inventory/lokasi', emoji: '🗂️', title: 'Barang per Lokasi', desc: 'Lihat isi tiap tempat', tone: 'butter' },
+  { href: '#/inventory/lokasi-atur', emoji: '📍', title: 'Atur Lokasi', desc: 'Tambah / ubah tempat simpan', tone: 'mint' },
 ];
 
 export default {

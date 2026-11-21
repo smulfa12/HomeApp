@@ -522,3 +522,4 @@ select.input {
 @media (prefers-reduced-motion: reduce) {
   .celebrate span { display: none; }
 }
+.chip--link { border-style: dashed; color: var(--accent); }

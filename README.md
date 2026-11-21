@@ -14,6 +14,7 @@ Bisa dipasang ke layar utama HP dan tetap jalan tanpa internet (kecuali scan not
 | 3 | **Stock Opname** | Hitung stok fisik per lokasi sebelum belanja, selisih disesuaikan otomatis, lalu lanjut ke daftar belanja. |
 | 4 | **Daftar Belanja** | Barang dengan stok < minimum stok, jumlah yang perlu dibeli, estimasi biaya, kirim ke WhatsApp / salin, centang = stok bertambah. |
 | 5 | **Barang per Lokasi** | Barang dikelompokkan per tempat (Dapur, Kulkas, Gudang, …) + peringatan kadaluarsa. |
+| 6 | **Atur Lokasi** | Kelola sendiri tempat penyimpanan: tambah, ganti nama & ikon (barang ikut pindah), urutkan, hapus (barang dipindahkan ke lokasi lain). Disimpan di `app_settings` (tidak perlu SQL). |
 
 ### 💰 Menu Utama Financial Rumah
 | # | Menu | Isi |
