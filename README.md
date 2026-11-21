@@ -26,6 +26,7 @@ Bisa dipasang ke layar utama HP dan tetap jalan tanpa internet (kecuali scan not
 | 6 | **Budget & Realisasi** | Budget per kategori per bulan, progres realisasi, status over budget, salin budget bulan lalu. |
 | 7 | **Transfer** | Pindah saldo antar dompet/rekening, bayar hutang/kartu kredit, pakai paylater; biaya admin dicatat sebagai pengeluaran. Tidak dihitung sebagai pemasukan/pengeluaran. |
 | 8 | **Target Tabungan** | Target nabung (dana darurat, DP rumah, dll) dikaitkan ke satu atau beberapa rekening; progres % otomatis dari saldo, kebutuhan nabung per bulan, perkiraan tercapai, saran dana darurat (6× pengeluaran bulanan), perayaan 25/50/75/100%. |
+| 9 | **Kategori Budget** | Atur sendiri kategori pengeluaran (budget) & pemasukan: tambah, ganti nama/ikon (transaksi & budget lama ikut pindah), urutkan, sembunyikan, hapus. Disimpan di `app_settings` (tidak perlu SQL). |
 
 Tambahan: **Login**, **Dompet & Rekening** (menu Atur: tambah dompet, bank, e-wallet, tabungan, emas, piutang, hutang, paylater; ikon, nomor rekening, arsip) (dompet, bank, e-wallet, tabungan, aset tetap, hutang) sebagai sumber neraca, dan **Pengaturan** (backup/restore JSON, isi data contoh, hapus data).
 

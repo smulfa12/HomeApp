@@ -427,3 +427,17 @@ a.setting-row { color: inherit; }
 .acc-check__icon { font-size: 18px; }
 .acc-check__warn { display: block; color: var(--warn-ink); font-size: 11px; }
 .menu-grid > .menu-tile:last-child:nth-child(odd) { grid-column: span 2; min-height: 100px; }
+
+/* ---------- Kategori ---------- */
+.cat-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.cat-row { display: flex; align-items: center; gap: 4px; border-bottom: 1px dashed var(--line); }
+.cat-row:last-child { border-bottom: 0; }
+.cat-row--hidden { opacity: 0.6; }
+.cat-row__main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 10px 2px; text-align: left; }
+.cat-row__main strong { display: block; font-size: 14.5px; }
+.cat-row__main small { display: block; font-size: 12px; color: var(--muted); }
+.cat-row__emoji { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 13px; background: var(--tile); font-size: 20px; }
+.cat-row__move { display: flex; flex-direction: column; }
+.cat-row__move .icon-btn:disabled { opacity: 0.25; }
+.cat-preview { display: grid; place-items: center; }
+.cat-preview span { width: 72px; height: 72px; display: grid; place-items: center; border-radius: 22px; background: var(--accent-soft); font-size: 36px; }

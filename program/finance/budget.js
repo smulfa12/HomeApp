@@ -42,6 +42,7 @@ export default {
           <button class="btn btn--primary grow" data-edit>✏️ Atur Budget</button>
           <button class="btn btn--soft grow" data-copy>📄 Salin bulan lalu</button>
         </div>
+        <a class="link-card" href="#/finance/kategori?type=expense&from=budget">🗂️ Atur kategori budget (tambah / ubah / urutkan) <span>›</span></a>
 
         <section class="card">
           ${
@@ -92,7 +93,7 @@ export default {
         title: `Budget ${monthLabel(month)}`,
         body: `
           <form class="form" data-budget>
-            ${fin.EXPENSE_CATEGORIES.map(
+            ${fin.getCategories('expense').map(
               (c) => `
               <label class="budget-input">
                 <span>${c.emoji} ${esc(c.name)}</span>

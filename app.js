@@ -35,11 +35,12 @@ import budget from './program/finance/budget.js';
 import akun from './program/finance/akun.js';
 import transfer from './program/finance/transfer.js';
 import targetTabungan from './program/finance/target-tabungan.js';
+import kategori from './program/finance/kategori.js';
 
 const MODULES = [
   login, home, settings,
   inventoryMenu, inputBarang, stockKeluar, stockOpname, daftarBelanja, barangLokasi,
-  financeMenu, inputIncome, inputExpense, laporanPengeluaran, laporanPemasukan, neracaLabaRugi, budget, akun, transfer, targetTabungan,
+  financeMenu, inputIncome, inputExpense, laporanPengeluaran, laporanPemasukan, neracaLabaRugi, budget, akun, transfer, targetTabungan, kategori,
 ];
 
 /** Tandai tab navigasi bawah yang aktif sesuai halaman. */
