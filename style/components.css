@@ -528,3 +528,7 @@ select.input {
 .tx-list__row:focus-visible { outline: 3px solid var(--accent); }
 .tx-list__edit { font-size: 13px; opacity: 0.55; }
 .danger-word { color: var(--danger); letter-spacing: 1px; }
+.scanner__view--hit .scanner__frame { border-color: var(--ok); box-shadow: 0 0 0 999px rgba(85, 112, 95, 0.35); }
+.scanner__feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.scanner__feed li { padding: 8px 12px; border-radius: 12px; background: var(--ok-soft); color: var(--ok); font-weight: 800; font-size: 13.5px; }
+.scanner__feed li + li { opacity: 0.55; background: var(--bg); color: var(--muted); }

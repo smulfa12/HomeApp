@@ -38,8 +38,24 @@ create table if not exists public.inv_movements (
 );
 create index if not exists inv_movements_item_idx on public.inv_movements (item_id);
 
+-- ---------- Riwayat belanja ----------
+create table if not exists public.inv_shopping (
+  id              text primary key,
+  date            date not null,
+  store           text,
+  total           double precision not null default 0,
+  account_id      text,
+  transaction_id  text,
+  items           jsonb not null default '[]'::jsonb,
+  note            text,
+  created_at      text,
+  updated_at      text,
+  created_by      uuid default auth.uid()
+);
+create index if not exists inv_shopping_date_idx on public.inv_shopping (date);
+
 -- ---------- Keuangan ----------
--- (Database lama: jalankan juga 002_akun_uang.sql, 003_transfer.sql, 004_target_tabungan.sql)
+-- (Database lama: jalankan juga 002_akun_uang.sql, 003_transfer.sql, 004_target_tabungan.sql, 005_riwayat_belanja.sql)
 create table if not exists public.fin_accounts (
   id          text primary key,
   name        text not null,
@@ -109,7 +125,7 @@ create table if not exists public.app_settings (
 do $$
 declare t text;
 begin
-  foreach t in array array['inv_items','inv_movements','fin_accounts','fin_transactions','fin_goals','app_settings'] loop
+  foreach t in array array['inv_items','inv_movements','inv_shopping','fin_accounts','fin_transactions','fin_goals','app_settings'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists "keluarga boleh semua" on public.%I', t);
     execute format('create policy "keluarga boleh semua" on public.%I for all to authenticated using (true) with check (true)', t);

@@ -24,6 +24,8 @@ import stockOpname from './program/inventory/stock-opname.js';
 import daftarBelanja from './program/inventory/daftar-belanja.js';
 import barangLokasi from './program/inventory/barang-lokasi.js';
 import lokasiAtur from './program/inventory/lokasi-atur.js';
+import modeBelanja from './program/inventory/mode-belanja.js';
+import riwayatBelanja from './program/inventory/riwayat-belanja.js';
 
 // Menu Utama Financial Rumah
 import financeMenu from './program/finance/finance-menu.js';
@@ -40,7 +42,7 @@ import kategori from './program/finance/kategori.js';
 
 const MODULES = [
   login, home, settings,
-  inventoryMenu, inputBarang, stockKeluar, stockOpname, daftarBelanja, barangLokasi, lokasiAtur,
+  inventoryMenu, inputBarang, stockKeluar, stockOpname, daftarBelanja, modeBelanja, riwayatBelanja, barangLokasi, lokasiAtur,
   financeMenu, inputIncome, inputExpense, laporanPengeluaran, laporanPemasukan, neracaLabaRugi, budget, akun, transfer, targetTabungan, kategori,
 ];
 

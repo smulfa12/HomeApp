@@ -7,7 +7,7 @@
  *  - Cadangan: foto barcode, atau ketik kode manual.
  */
 import { loadScript } from './script-loader.service.js';
-import { openSheet } from './ui.service.js';
+import { openSheet, esc } from './ui.service.js';
 import { APP_VERSION } from './version.service.js';
 
 const ZXING_URL = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
@@ -186,10 +186,12 @@ async function openCamera() {
  * Membuka bottom-sheet scanner. Resolve dengan kode barcode (string)
  * atau null bila dibatalkan.
  */
-export function scanBarcode({ title = 'Scan Barcode' } = {}) {
+export function scanBarcode({ title = 'Scan Barcode', continuous = false, onCode } = {}) {
   return new Promise((resolve) => {
     let stream = null;
     let done = false;
+    let last = { code: '', at: 0 };
+    let busy = false;
 
     const sheet = openSheet({
       title,
@@ -210,6 +212,7 @@ export function scanBarcode({ title = 'Scan Barcode' } = {}) {
             <input class="input" name="code" inputmode="numeric" placeholder="atau ketik kode barcode" autocomplete="off" />
             <button class="btn btn--soft" type="submit">OK</button>
           </form>
+          ${continuous ? `<ul class="scanner__feed" data-feed></ul><button type="button" class="btn btn--primary btn--block" data-finish>✅ Selesai scan</button>` : ''}
           <p class="scanner__engine" data-engine>${APP_VERSION}</p>
         </div>`,
       onClose: () => finish(null),
@@ -237,10 +240,48 @@ export function scanBarcode({ title = 'Scan Barcode' } = {}) {
       resolve(code ? String(code).trim() : null);
     };
 
+    /**
+     * Mode biasa: barcode pertama langsung dikembalikan.
+     * Mode terus-menerus: kamera tetap terbuka, tiap barcode dikirim ke onCode().
+     * Barcode yang sama diabaikan sampai hilang dari kamera ±3 detik.
+     * onCode boleh mengembalikan { message, stop }.
+     */
+    const handle = async (raw, { manual = false } = {}) => {
+      const code = String(raw).trim();
+      if (!continuous) return finish(code);
+      if (busy || done) return;
+      const now = Date.now();
+      if (!manual && code === last.code && now - last.at < 3000) {
+        last.at = now; // masih barang yang sama di depan kamera
+        return;
+      }
+      last = { code, at: now };
+      busy = true;
+      if (navigator.vibrate) navigator.vibrate(60);
+      view.classList.add('scanner__view--hit');
+      setTimeout(() => view.classList.remove('scanner__view--hit'), 450);
+      let res = {};
+      try {
+        res = (await onCode?.(code)) || {};
+      } catch (err) {
+        res = { message: `⚠️ ${err.message}` };
+      }
+      busy = false;
+      if (res.message) {
+        const feed = sheet.el.querySelector('[data-feed]');
+        feed.insertAdjacentHTML('afterbegin', `<li>${esc(res.message)}</li>`);
+        [...feed.children].slice(4).forEach((li) => li.remove());
+      }
+      if (res.stop) finish(code);
+    };
+
+    sheet.el.querySelector('[data-finish]')?.addEventListener('click', () => finish(null));
+
     sheet.el.querySelector('[data-manual]').addEventListener('submit', (e) => {
       e.preventDefault();
       const v = e.target.code.value.trim();
-      if (v) finish(v);
+      e.target.code.value = '';
+      if (v) handle(v, { manual: true });
     });
 
     sheet.el.querySelector('[data-photo]').addEventListener('change', async (e) => {
@@ -250,7 +291,11 @@ export function scanBarcode({ title = 'Scan Barcode' } = {}) {
       tip.textContent = '🔎 Membaca foto…';
       try {
         const code = await decodeImageFile(file);
-        if (code) return finish(code);
+        if (code) {
+          tip.textContent = 'Posisikan barcode mendatar di dalam bingkai, jarak ±15 cm';
+          e.target.value = '';
+          return handle(code, { manual: true });
+        }
         tip.textContent = '😕 Barcode tidak terbaca. Foto lebih dekat, terang, dan tidak buram.';
       } catch (err) {
         tip.textContent = err.message;
@@ -303,7 +348,10 @@ export function scanBarcode({ title = 'Scan Barcode' } = {}) {
           const attempt = ATTEMPTS[Math.floor(n / decoders.length) % ATTEMPTS.length];
           n++;
           const code = await decoder.decode(grab(video, video.videoWidth, video.videoHeight, canvas, { ...attempt, maxW: 1000 }));
-          if (code) return finish(code);
+          if (code) {
+            await handle(code);
+            if (done) return;
+          }
         }
         setTimeout(loop, 120);
       };
