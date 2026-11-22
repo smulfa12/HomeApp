@@ -8,7 +8,7 @@ import { DRAFT_KEY } from './resep.js';
 
 export default {
   path: '/resep/form',
-  title: 'Resep',
+  title: 'Recipes',
   autoRefresh: false,
   render(el, params) {
     let r = params.id ? rcp.getRecipe(params.id) : null;
@@ -24,7 +24,7 @@ export default {
     const back = r.id ? `#/resep/detail?id=${r.id}` : '#/resep';
 
     el.innerHTML = `
-      ${pageHeader({ title: r.id ? 'Edit Resep' : fromAi ? 'Periksa Resep dari AI' : 'Resep Baru', subtitle: fromAi ? 'Cek & ubah bila perlu, lalu simpan' : 'Bahan, langkah & gizi', emoji: fromAi ? '✨' : '✍️', tone: 'peach', back })}
+      ${pageHeader({ title: r.id ? 'Edit Recipe' : fromAi ? 'Review AI Recipe' : 'New Recipe', subtitle: fromAi ? 'Cek & ubah bila perlu, lalu simpan' : 'Bahan, langkah & gizi', emoji: fromAi ? '✨' : '✍️', tone: 'peach', back })}
       ${fromAi ? `<div class="notice tone-butter">✨ Disusun oleh AI. Takaran & gizi adalah <b>perkiraan</b> — sesuaikan dengan kebiasaan masak keluargamu.</div>` : ''}
 
       <form class="card form" data-recipe autocomplete="off">

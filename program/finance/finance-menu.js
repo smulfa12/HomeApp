@@ -9,17 +9,17 @@ const MENUS = [
   { href: '#/finance/income', emoji: '💰', title: 'Income', desc: 'Catat pemasukan', tone: 'mint' },
   { href: '#/finance/expense', emoji: '🧾', title: 'Expense', desc: 'Scan nota / manual', tone: 'peach' },
   { href: '#/finance/transfer', emoji: '🔁', title: 'Transfer', desc: 'Antar dompet & rekening', tone: 'sky' },
-  { href: '#/finance/target', emoji: '🐷', title: 'Target Tabungan', desc: 'Dana darurat & impian', tone: 'rose' },
-  { href: '#/finance/neraca', emoji: '⚖️', title: 'Neraca & Laba Rugi', desc: 'Kesehatan keuangan', tone: 'lavender' },
-  { href: '#/finance/budget', emoji: '🎯', title: 'Budget & Realisasi', desc: 'Rencana vs aktual', tone: 'butter' },
-  { href: '#/finance/laporan-pemasukan', emoji: '📈', title: 'Data Pemasukan', desc: 'Per periode', tone: 'sky' },
-  { href: '#/finance/laporan-pengeluaran', emoji: '📉', title: 'Data Pengeluaran', desc: 'Per periode', tone: 'rose' },
-  { href: '#/finance/akun', emoji: '💳', title: 'Atur Dompet & Rekening', desc: 'Tambah / atur tempat uang', tone: 'mint' },
+  { href: '#/finance/target', emoji: '🐷', title: 'Savings Goals', desc: 'Dana darurat & impian', tone: 'rose' },
+  { href: '#/finance/neraca', emoji: '⚖️', title: 'Balance Sheet & P&L', desc: 'Kesehatan keuangan', tone: 'lavender' },
+  { href: '#/finance/budget', emoji: '🎯', title: 'Budget vs Actual', desc: 'Rencana vs aktual', tone: 'butter' },
+  { href: '#/finance/laporan-pemasukan', emoji: '📈', title: 'Income Report', desc: 'Per periode', tone: 'sky' },
+  { href: '#/finance/laporan-pengeluaran', emoji: '📉', title: 'Expense Report', desc: 'Per periode', tone: 'rose' },
+  { href: '#/finance/akun', emoji: '💳', title: 'Manage Accounts', desc: 'Tambah / atur tempat uang', tone: 'mint' },
 ];
 
 export default {
   path: '/finance',
-  title: 'Keuangan Rumah',
+  title: 'Home Finance',
   render(el) {
     const month = thisMonth();
     const s = fin.summary(month);
@@ -27,7 +27,7 @@ export default {
     const pct = b.totalBudget ? Math.min(Math.round((b.totalSpent / b.totalBudget) * 100), 100) : 0;
 
     el.innerHTML = `
-      ${pageHeader({ title: 'Keuangan Rumah', subtitle: monthLabel(month), emoji: '💰', tone: 'lavender' })}
+      ${pageHeader({ title: 'Home Finance', subtitle: monthLabel(month), emoji: '💰', tone: 'lavender' })}
 
       <section class="balance-card">
         <span>Saldo kas, bank & e-wallet</span>

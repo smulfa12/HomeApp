@@ -6,6 +6,8 @@ Bisa dipasang ke layar utama HP dan tetap jalan tanpa internet (kecuali scan not
 
 ## ✨ Fitur
 
+> Nama menu di aplikasi memakai bahasa Inggris (Home, Inventory, Finance, Activities, Recipes, Settings); isi & keterangan tetap bahasa Indonesia.
+
 ### 📦 Menu Utama Inventory Rumah
 | # | Menu | Isi |
 |---|------|-----|

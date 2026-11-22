@@ -6,7 +6,7 @@ import { createReportPage } from '../shared/transaction-report.js';
 export default createReportPage({
   path: '/finance/laporan-pemasukan',
   type: 'income',
-  title: 'Data Pemasukan',
+  title: 'Income Report',
   emoji: '📈',
   tone: 'mint',
   addHref: '#/finance/income',

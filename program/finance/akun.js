@@ -11,7 +11,7 @@ const maskNumber = (n) => (n && n.length > 4 ? `•••• ${n.slice(-4)}` : n
 
 export default {
   path: '/finance/akun',
-  title: 'Dompet & Rekening',
+  title: 'Manage Accounts',
   render(el, params) {
     const back = params.from === 'settings' ? '#/settings' : params.from === 'neraca' ? '#/finance/neraca' : '#/finance';
 
@@ -36,14 +36,14 @@ export default {
       const totalDebt = liabilities.reduce((s, a) => s + fin.accountBalance(a), 0);
 
       el.innerHTML = `
-        ${pageHeader({ title: 'Dompet & Rekening', subtitle: 'Tempat menyimpan uang keluarga', emoji: '💳', tone: 'lavender', back })}
+        ${pageHeader({ title: 'Manage Accounts', subtitle: 'Tempat menyimpan uang keluarga', emoji: '💳', tone: 'lavender', back })}
 
         <section class="stat-row">
           <div class="stat tone-lavender"><span>Total uang & aset</span><strong class="small-num">${rupiah(totalAssets)}</strong></div>
           <div class="stat tone-rose"><span>Total hutang</span><strong class="small-num">${rupiah(totalDebt)}</strong></div>
         </section>
 
-        <a class="link-card" href="#/finance/transfer">🔁 Transfer antar dompet / bayar hutang <span>›</span></a>
+        <a class="link-card" href="#/finance/transfer">🔁 Transfer (antar akun / bayar hutang) <span>›</span></a>
 
         <section class="card">
           <div class="card__head"><h2>💰 Uang & Aset</h2><button class="btn btn--primary btn--sm" data-add="asset">+ Tambah</button></div>

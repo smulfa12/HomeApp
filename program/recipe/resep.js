@@ -48,14 +48,14 @@ export function openAiSheet() {
 
 export default {
   path: '/resep',
-  title: 'Resep',
+  title: 'Recipes',
   render(el) {
     let q = '';
     let category = '';
     let favorite = false;
 
     el.innerHTML = `
-      ${pageHeader({ title: 'Resep', subtitle: 'Menu masak, resep & gizi keluarga', emoji: '🍳', tone: 'peach', back: '#/' })}
+      ${pageHeader({ title: 'Recipes', subtitle: 'Menu masak, resep & gizi keluarga', emoji: '🍳', tone: 'peach', back: '#/' })}
 
       <div class="row gap-sm">
         <button class="btn btn--primary grow" data-ai>✨ Tambah dengan AI</button>
@@ -72,7 +72,7 @@ export default {
       const plan = rcp.mealPlan(7);
       const count = plan.reduce((s, d) => s + d.meals.length, 0);
       el.querySelector('[data-plan]').innerHTML = `
-        <div class="card__head"><h2>📅 Rencana menu 7 hari</h2><a class="link" href="#/kegiatan">Kegiatan ›</a></div>
+        <div class="card__head"><h2>📅 7-Day Meal Plan</h2><a class="link" href="#/kegiatan">Activities ›</a></div>
         ${count
           ? `<ul class="plan">${plan
               .map(({ date, meals }) => {
@@ -84,7 +84,7 @@ export default {
                     : '<span class="muted small">—</span>'}</div></li>`;
               })
               .join('')}</ul>`
-          : `<p class="muted small">Belum ada jadwal masak. Buka resep → <b>📅 Jadwalkan masak</b>, nanti muncul di sini dan di Kegiatan.</p>`}`;
+          : `<p class="muted small">Belum ada jadwal masak. Buka resep → <b>📅 Jadwalkan masak</b>, nanti muncul di sini dan di Activities.</p>`}`;
     };
 
     const drawList = () => {

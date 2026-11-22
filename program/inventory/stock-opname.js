@@ -11,7 +11,7 @@ import { navigate } from '../../service/router.service.js';
 
 export default {
   path: '/inventory/opname',
-  title: 'Stock Opname',
+  title: 'Stock Count',
   autoRefresh: false, // halaman form: jangan di-render ulang saat ada data baru
   render(el) {
     const items = inv.listItems();
@@ -20,7 +20,7 @@ export default {
     const last = inv.lastOpnameDate();
 
     if (!items.length) {
-      el.innerHTML = `${pageHeader({ title: 'Stock Opname', emoji: '📋', tone: 'sky', back: '#/inventory' })}
+      el.innerHTML = `${pageHeader({ title: 'Stock Count', emoji: '📋', tone: 'sky', back: '#/inventory' })}
         <div class="card">${emptyState('📦', 'Belum ada barang', 'Tambahkan barang dulu sebelum stock opname.', `<a class="btn btn--primary" href="#/inventory/input">Input Barang</a>`)}</div>`;
       return;
     }
@@ -28,7 +28,7 @@ export default {
     const locations = ['Semua', ...new Set(items.map((i) => i.location || 'Belum ditentukan'))];
 
     el.innerHTML = `
-      ${pageHeader({ title: 'Stock Opname', subtitle: last ? `Terakhir: ${dateLabel(last)}` : 'Hitung stok fisik sebelum belanja', emoji: '📋', tone: 'sky', back: '#/inventory' })}
+      ${pageHeader({ title: 'Stock Count', subtitle: last ? `Terakhir: ${dateLabel(last)}` : 'Hitung stok fisik sebelum belanja', emoji: '📋', tone: 'sky', back: '#/inventory' })}
 
       <div class="notice tone-sky">💡 Isi jumlah fisik barang. Biarkan kosong jika sama dengan sistem.</div>
 

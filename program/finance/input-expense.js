@@ -11,7 +11,7 @@ import { transactionFormHtml, bindTransactionForm } from '../shared/transaction-
 
 export default {
   path: '/finance/expense',
-  title: 'Input Expense',
+  title: 'Expense',
   autoRefresh: false, // halaman form: jangan di-render ulang saat ada data baru
   render(el, params) {
     let mode = params.mode === 'manual' ? 'manual' : 'scan';
@@ -19,7 +19,7 @@ export default {
 
     const draw = () => {
       el.innerHTML = `
-        ${pageHeader({ title: 'Input Expense', subtitle: 'Catat pengeluaran keluarga', emoji: '🧾', tone: 'peach', back: '#/finance' })}
+        ${pageHeader({ title: 'Expense', subtitle: 'Catat pengeluaran keluarga', emoji: '🧾', tone: 'peach', back: '#/finance' })}
         <div class="segmented">
           <button class="${mode === 'scan' ? 'on' : ''}" data-mode="scan">📸 Scan Nota</button>
           <button class="${mode === 'manual' ? 'on' : ''}" data-mode="manual">✍️ Manual</button>

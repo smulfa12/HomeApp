@@ -10,13 +10,13 @@ import { itemCard } from '../shared/item-card.js';
 
 export default {
   path: '/inventory/keluar',
-  title: 'Stock Keluar',
+  title: 'Stock Out',
   autoRefresh: false, // halaman form: jangan di-render ulang saat ada data baru
   render(el) {
     let selected = null;
 
     el.innerHTML = `
-      ${pageHeader({ title: 'Stock Keluar', subtitle: 'Catat barang yang dipakai', emoji: '📤', tone: 'peach', back: '#/inventory' })}
+      ${pageHeader({ title: 'Stock Out', subtitle: 'Catat barang yang dipakai', emoji: '📤', tone: 'peach', back: '#/inventory' })}
 
       <button class="scan-cta tone-peach" data-scan>
         <span class="scan-cta__icon">📷</span>

@@ -19,15 +19,15 @@ function section(title, rows, totalLabel, totalValue, tone, sign = '') {
 
 export default {
   path: '/finance/neraca',
-  title: 'Neraca & Laba Rugi',
+  title: 'Balance Sheet & P&L',
   render(el) {
     let tab = 'labarugi';
 
     el.innerHTML = `
-      ${pageHeader({ title: 'Neraca & Laba Rugi', subtitle: 'Laporan keuangan keluarga', emoji: '⚖️', tone: 'lavender', back: '#/finance' })}
+      ${pageHeader({ title: 'Balance Sheet & P&L', subtitle: 'Laporan keuangan keluarga', emoji: '⚖️', tone: 'lavender', back: '#/finance' })}
       <div class="segmented">
-        <button class="on" data-tab="labarugi">📊 Laba Rugi</button>
-        <button data-tab="neraca">⚖️ Neraca</button>
+        <button class="on" data-tab="labarugi">📊 Profit & Loss</button>
+        <button data-tab="neraca">⚖️ Balance Sheet</button>
       </div>
       <div data-labarugi>
         <div data-period></div>

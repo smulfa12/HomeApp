@@ -18,12 +18,12 @@ const STOCK = {
 
 export default {
   path: '/resep/detail',
-  title: 'Resep',
+  title: 'Recipes',
   render(el, params) {
     const draw = () => {
       const r = rcp.getRecipe(params.id);
       if (!r) {
-        el.innerHTML = `${pageHeader({ title: 'Resep', emoji: '🍳', tone: 'peach', back: '#/resep' })}<div class="card">${emptyState('🤔', 'Resep tidak ditemukan', 'Mungkin sudah dihapus.')}</div>`;
+        el.innerHTML = `${pageHeader({ title: 'Recipes', emoji: '🍳', tone: 'peach', back: '#/resep' })}<div class="card">${emptyState('🤔', 'Resep tidak ditemukan', 'Mungkin sudah dihapus.')}</div>`;
         return;
       }
       let portions = Number(sessionStorage.getItem(`portions-${r.id}`)) || r.servings || 1;
@@ -44,7 +44,7 @@ export default {
 
         ${upcoming.length ? `
         <section class="card">
-          <div class="card__head"><h2>📅 Jadwal masak</h2><a class="link" href="#/kegiatan">Kegiatan ›</a></div>
+          <div class="card__head"><h2>📅 Jadwal masak</h2><a class="link" href="#/kegiatan">Activities ›</a></div>
           <ul class="mini-list">${upcoming.slice(0, 5).map((u) => `<li><span>${dateLabel(u.date)}${u.time ? ` · ${u.time}` : ''}${u.who ? ` · 👤 ${esc(u.who)}` : ''}</span>${u.done ? '<span class="badge badge--ok">sudah</span>' : ''}</li>`).join('')}</ul>
         </section>` : ''}
 
@@ -103,11 +103,11 @@ export default {
       });
       el.querySelector('[data-cart]')?.addEventListener('click', () => {
         missing.forEach((s) => shop.addToSession(s.item, 1));
-        toast(`🛒 ${missing.length} bahan masuk keranjang Mode Belanja`);
+        toast(`🛒 ${missing.length} bahan masuk keranjang Shopping Mode`);
       });
       el.querySelector('[data-schedule]').addEventListener('click', () => schedule(r));
       el.querySelector('[data-del]').addEventListener('click', async () => {
-        if (!(await confirmDialog(`Hapus resep "${r.name}"? Jadwal masak di Kegiatan tetap ada.`, { okText: 'Hapus', danger: true }))) return;
+        if (!(await confirmDialog(`Hapus resep "${r.name}"? Jadwal masak di Activities tetap ada.`, { okText: 'Hapus', danger: true }))) return;
         rcp.deleteRecipe(r.id);
         toast('Resep dihapus');
         navigate('/resep');
@@ -134,7 +134,7 @@ export default {
               <input class="input" name="who" maxlength="20" list="who-list-r" placeholder="cth. Ibu" />
               <datalist id="who-list-r">${names.map((n) => `<option value="${esc(n)}"></option>`).join('')}</datalist>
             </label>
-            <button class="btn btn--primary btn--block" type="submit">📅 Masukkan ke Kegiatan</button>
+            <button class="btn btn--primary btn--block" type="submit">📅 Add to Activities</button>
           </form>`,
       });
       const f = sheet.el.querySelector('[data-sch]');
@@ -149,7 +149,7 @@ export default {
         try {
           rcp.scheduleCooking(r, { date: f.date.value, time: f.time.value, who: f.who.value, repeat: f.repeat.value });
           sheet.close();
-          toast('📅 Jadwal masak masuk ke Kegiatan');
+          toast('📅 Jadwal masak masuk ke Activities');
           draw();
         } catch (err) {
           toast(err.message, 'error');

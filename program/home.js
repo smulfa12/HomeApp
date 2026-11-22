@@ -20,7 +20,7 @@ function greeting() {
 
 export default {
   path: '/',
-  title: 'Beranda',
+  title: 'Home',
   render(el) {
     const [hello, icon] = greeting();
     const is = inv.summary();
@@ -35,7 +35,7 @@ export default {
     const goals = fin.listGoals().slice(0, 3);
     const goalsHtml = goals.length
       ? `<a class="card goal-mini" href="#/finance/target">
-          <div class="card__head"><h2>🐷 Target Tabungan</h2><span class="link">Semua ›</span></div>
+          <div class="card__head"><h2>🐷 Savings Goals</h2><span class="link">Semua ›</span></div>
           ${goals
             .map((g) => {
               const p = fin.goalProgress(g);
@@ -55,7 +55,7 @@ export default {
     const todoHtml = `
       <section class="card todo-home">
         <div class="card__head">
-          <h2>✅ Kegiatan hari ini</h2>
+          <h2>✅ Today's Activities</h2>
           <a class="link" href="#/kegiatan">${tasks.length ? `${doneCount}/${tasks.length} selesai ›` : 'Buka ›'}</a>
         </div>
         ${tasks.length
@@ -76,7 +76,7 @@ export default {
 
       ${empty ? `
       <div class="notice tone-lavender">
-        👋 Data masih kosong. <a class="link" href="#/settings">Isi data contoh</a> untuk mencoba, atau langsung mulai input.
+        👋 Data masih kosong. <a class="link" href="#/settings">Load Sample Data</a> untuk mencoba, atau langsung mulai input.
       </div>` : ''}
 
       ${todoHtml}
@@ -84,7 +84,7 @@ export default {
       <a class="big-card tone-mint" href="#/inventory">
         <div class="big-card__top">
           <span class="big-card__icon">📦</span>
-          <div><h2>Inventory Rumah</h2><p>${is.totalItems} barang di ${is.locations} lokasi</p></div>
+          <div><h2>Home Inventory</h2><p>${is.totalItems} barang di ${is.locations} lokasi</p></div>
           <span class="big-card__arrow">›</span>
         </div>
         <div class="big-card__stats">
@@ -96,7 +96,7 @@ export default {
       <a class="big-card tone-lavender" href="#/finance">
         <div class="big-card__top">
           <span class="big-card__icon">💰</span>
-          <div><h2>Keuangan Rumah</h2><p>${monthLabel(thisMonth())}</p></div>
+          <div><h2>Home Finance</h2><p>${monthLabel(thisMonth())}</p></div>
           <span class="big-card__arrow">›</span>
         </div>
         <div class="big-card__stats">
@@ -106,19 +106,19 @@ export default {
         </div>
       </a>
 
-      <h3 class="section-title">⚡ Aksi cepat</h3>
+      <h3 class="section-title">⚡ Quick Actions</h3>
       <div class="quick-grid">
-        <a class="quick tone-mint" href="#/inventory/input"><span>📥</span>Barang masuk</a>
-        <a class="quick tone-peach" href="#/inventory/keluar"><span>📤</span>Barang keluar</a>
-        <a class="quick tone-sky" href="#/finance/expense"><span>🧾</span>Scan nota</a>
-        <a class="quick tone-butter" href="#/finance/income"><span>💰</span>Pemasukan</a>
+        <a class="quick tone-mint" href="#/inventory/input"><span>📥</span>Stock In</a>
+        <a class="quick tone-peach" href="#/inventory/keluar"><span>📤</span>Stock Out</a>
+        <a class="quick tone-sky" href="#/finance/expense"><span>🧾</span>Scan Receipt</a>
+        <a class="quick tone-butter" href="#/finance/income"><span>💰</span>Income</a>
       </div>
 
       ${goalsHtml}
 
       ${low.length ? `
       <section class="card">
-        <div class="card__head"><h2>🛒 Perlu dibeli</h2><a class="link" href="#/inventory/belanja">Semua (${is.lowStock})</a></div>
+        <div class="card__head"><h2>🛒 To Buy</h2><a class="link" href="#/inventory/belanja">Semua (${is.lowStock})</a></div>
         <ul class="mini-list">
           ${low.map((i) => `<li><span>${inv.categoryInfo(i.category).emoji} ${esc(i.name)}</span><span class="badge badge--warn">sisa ${i.qty}</span></li>`).join('')}
         </ul>

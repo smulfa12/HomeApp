@@ -62,7 +62,7 @@ function goalCard(g) {
 
 export default {
   path: '/finance/target',
-  title: 'Target Tabungan',
+  title: 'Savings Goals',
   render(el) {
     const draw = () => {
       const active = fin.listGoals();
@@ -70,7 +70,7 @@ export default {
       const done = active.filter((g) => fin.goalProgress(g).done).length;
 
       el.innerHTML = `
-        ${pageHeader({ title: 'Target Tabungan', subtitle: active.length ? `${active.length} target · ${done} tercapai` : 'Nabung untuk tujuan keluarga', emoji: '🐷', tone: 'rose', back: '#/finance' })}
+        ${pageHeader({ title: 'Savings Goals', subtitle: active.length ? `${active.length} target · ${done} tercapai` : 'Nabung untuk tujuan keluarga', emoji: '🐷', tone: 'rose', back: '#/finance' })}
 
         <button class="btn btn--primary btn--block" data-add>➕ Target Baru</button>
 

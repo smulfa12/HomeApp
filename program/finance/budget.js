@@ -14,7 +14,7 @@ function statusOf(pct) {
 
 export default {
   path: '/finance/budget',
-  title: 'Budget & Realisasi',
+  title: 'Budget vs Actual',
   render(el, params) {
     let month = params.month || thisMonth();
 
@@ -23,7 +23,7 @@ export default {
       const pctTotal = data.totalBudget ? Math.round((data.totalSpent / data.totalBudget) * 100) : 0;
 
       el.innerHTML = `
-        ${pageHeader({ title: 'Budget & Realisasi', subtitle: 'Rencana vs pengeluaran nyata', emoji: '🎯', tone: 'butter', back: '#/finance' })}
+        ${pageHeader({ title: 'Budget vs Actual', subtitle: 'Rencana vs pengeluaran nyata', emoji: '🎯', tone: 'butter', back: '#/finance' })}
 
         <div class="month-switch">
           <button class="icon-btn" data-m="-1" aria-label="Bulan sebelumnya">‹</button>
@@ -42,7 +42,7 @@ export default {
           <button class="btn btn--primary grow" data-edit>✏️ Atur Budget</button>
           <button class="btn btn--soft grow" data-copy>📄 Salin bulan lalu</button>
         </div>
-        <a class="link-card" href="#/finance/kategori?type=expense&from=budget">🗂️ Atur kategori budget (tambah / ubah / urutkan) <span>›</span></a>
+        <a class="link-card" href="#/finance/kategori?type=expense&from=budget">🗂️ Budget Categories (tambah / ubah / urutkan) <span>›</span></a>
 
         <section class="card">
           ${
