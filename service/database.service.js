@@ -30,6 +30,10 @@ export const TABLES = {
     table: 'inv_shopping',
     columns: ['id', 'date', 'store', 'total', 'accountId', 'transactionId', 'items', 'note', 'createdAt', 'updatedAt'],
   },
+  'act.todos': {
+    table: 'act_todos',
+    columns: ['id', 'title', 'icon', 'time', 'endTime', 'date', 'repeat', 'days', 'who', 'note', 'doneDates', 'skipDates', 'createdAt', 'updatedAt'],
+  },
   'fin.goals': {
     table: 'fin_goals',
     columns: ['id', 'name', 'icon', 'targetAmount', 'accountIds', 'deadline', 'note', 'archived', 'milestone', 'createdAt', 'updatedAt'],
@@ -54,7 +58,7 @@ export function toRow(key, obj) {
 }
 
 /** Nilai pengganti NULL dari database untuk kolom non-teks. */
-const EMPTY = { archived: false, accountIds: [], milestone: 0, items: [] };
+const EMPTY = { archived: false, accountIds: [], milestone: 0, items: [], days: [], doneDates: [], skipDates: [] };
 
 export function fromRow(key, row) {
   const out = {};

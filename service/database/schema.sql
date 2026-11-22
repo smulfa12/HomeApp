@@ -55,7 +55,7 @@ create table if not exists public.inv_shopping (
 create index if not exists inv_shopping_date_idx on public.inv_shopping (date);
 
 -- ---------- Keuangan ----------
--- (Database lama: jalankan juga 002_akun_uang.sql, 003_transfer.sql, 004_target_tabungan.sql, 005_riwayat_belanja.sql)
+-- (Database lama: jalankan juga 002_akun_uang.sql, 003_transfer.sql, 004_target_tabungan.sql, 005_riwayat_belanja.sql, 006_kegiatan.sql)
 create table if not exists public.fin_accounts (
   id          text primary key,
   name        text not null,
@@ -114,6 +114,26 @@ create table if not exists public.fin_goals (
 );
 create index if not exists fin_goals_account_ids_idx on public.fin_goals using gin (account_ids);
 
+-- ---------- Kegiatan (to-do harian) ----------
+create table if not exists public.act_todos (
+  id          text primary key,
+  title       text not null,
+  icon        text,
+  time        text,
+  end_time    text,
+  date        date not null,
+  repeat      text not null default 'none' check (repeat in ('none', 'daily', 'weekdays', 'weekly')),
+  days        smallint[] not null default '{}',
+  who         text,
+  note        text,
+  done_dates  text[] not null default '{}',
+  skip_dates  text[] not null default '{}',
+  created_at  text,
+  updated_at  text,
+  created_by  uuid default auth.uid()
+);
+create index if not exists act_todos_date_idx on public.act_todos (date);
+
 -- ---------- Pengaturan (lokasi, budget, dll) ----------
 create table if not exists public.app_settings (
   key         text primary key,
@@ -125,7 +145,7 @@ create table if not exists public.app_settings (
 do $$
 declare t text;
 begin
-  foreach t in array array['inv_items','inv_movements','inv_shopping','fin_accounts','fin_transactions','fin_goals','app_settings'] loop
+  foreach t in array array['inv_items','inv_movements','inv_shopping','fin_accounts','fin_transactions','fin_goals','act_todos','app_settings'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists "keluarga boleh semua" on public.%I', t);
     execute format('create policy "keluarga boleh semua" on public.%I for all to authenticated using (true) with check (true)', t);

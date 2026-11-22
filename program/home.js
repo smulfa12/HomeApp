@@ -6,6 +6,9 @@ import { rupiahShort, thisMonth, monthLabel } from '../service/format.service.js
 import * as inv from '../service/inventory.service.js';
 import * as fin from '../service/finance.service.js';
 import { syncState, onSyncChange } from '../service/sync.service.js';
+import * as act from '../service/activity.service.js';
+import { today } from '../service/format.service.js';
+import { todoRow } from './shared/todo-row.js';
 
 function greeting() {
   const h = new Date().getHours();
@@ -45,6 +48,22 @@ export default {
         </a>`
       : '';
 
+    // Kegiatan hari ini: yang belum selesai dulu (urut jam), maks. 4
+    const tasks = act.tasksForDate(today());
+    const doneCount = tasks.filter((t) => t.done).length;
+    const upcoming = [...tasks.filter((t) => !t.done), ...tasks.filter((t) => t.done)].slice(0, 4);
+    const todoHtml = `
+      <section class="card todo-home">
+        <div class="card__head">
+          <h2>✅ Kegiatan hari ini</h2>
+          <a class="link" href="#/kegiatan">${tasks.length ? `${doneCount}/${tasks.length} selesai ›` : 'Buka ›'}</a>
+        </div>
+        ${tasks.length
+          ? `<div class="bar"><span style="width:${Math.round((doneCount / tasks.length) * 100)}%"></span></div>
+             <ul class="todo-list">${upcoming.map((t) => todoRow(t, today(), { compact: true })).join('')}</ul>`
+          : `<p class="muted small">Belum ada kegiatan. <a class="link" href="#/kegiatan">Buat jadwal harian</a></p>`}
+      </section>`;
+
     el.innerHTML = `
       <header class="home-head">
         <div>
@@ -59,6 +78,8 @@ export default {
       <div class="notice tone-lavender">
         👋 Data masih kosong. <a class="link" href="#/settings">Isi data contoh</a> untuk mencoba, atau langsung mulai input.
       </div>` : ''}
+
+      ${todoHtml}
 
       <a class="big-card tone-mint" href="#/inventory">
         <div class="big-card__top">
@@ -102,6 +123,13 @@ export default {
           ${low.map((i) => `<li><span>${inv.categoryInfo(i.category).emoji} ${esc(i.name)}</span><span class="badge badge--warn">sisa ${i.qty}</span></li>`).join('')}
         </ul>
       </section>` : ''}`;
+
+    el.querySelectorAll('[data-toggle]').forEach((b) =>
+      b.addEventListener('click', () => {
+        act.toggleDone(b.dataset.toggle, today());
+        window.dispatchEvent(new HashChangeEvent('hashchange')); // render ulang lewat router (listener lama dibersihkan)
+      })
+    );
 
     const pill = el.querySelector('[data-sync-pill]');
     return onSyncChange((st) => {
