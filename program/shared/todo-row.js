@@ -17,6 +17,7 @@ export function todoRow(t, date, { compact = false } = {}) {
           ${status === 'now' ? '<span class="badge badge--ok">sedang berlangsung</span>' : ''}
           ${status === 'late' ? '<span class="badge badge--warn">terlewat</span>' : ''}
           ${t.who ? `<span class="todo__who">👤 ${esc(t.who)}</span>` : ''}
+          ${t.recipeId ? `<a class="todo__recipe" href="#/resep/detail?id=${esc(t.recipeId)}">📖 Lihat resep</a>` : ''}
           ${t.repeat && t.repeat !== 'none' && !compact ? `<span>🔁 ${esc(t.repeat === 'weekly' ? (t.days || []).map((d) => act.DAY_SHORT[d]).join(', ') : act.REPEAT_LABEL[t.repeat])}</span>` : ''}
           ${t.note && !compact ? `<span>📝 ${esc(t.note)}</span>` : ''}
         </div>

@@ -7,6 +7,7 @@ import { pageHeader, esc, openSheet, toast, confirmDialog, emptyState, celebrate
 import { today, toISODate } from '../../service/format.service.js';
 import * as act from '../../service/activity.service.js';
 import { todoRow } from '../shared/todo-row.js';
+import * as rcp from '../../service/recipe.service.js';
 
 const DAY_LONG = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 const MONTH_LONG = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -100,6 +101,8 @@ export default {
           draw();
         })
       );
+      // tautan resep di dalam baris: buka resep, jangan buka form edit
+      el.querySelectorAll('.todo__recipe').forEach((a) => a.addEventListener('click', (e) => e.stopPropagation()));
       el.querySelectorAll('[data-edit]').forEach((b) => {
         const open = () => edit(act.getTodo(b.dataset.edit));
         b.addEventListener('click', open);
@@ -145,6 +148,12 @@ export default {
             <label class="field"><span>Untuk siapa (opsional)</span>
               <input class="input" name="who" maxlength="20" value="${esc(t.who || '')}" placeholder="cth. Ayah, Ibu, Kakak" list="who-list" />
               <datalist id="who-list">${names.map((n) => `<option value="${esc(n)}"></option>`).join('')}</datalist>
+            </label>
+            <label class="field"><span>🍳 Hubungkan resep (opsional)</span>
+              <select class="input" name="recipeId">
+                <option value="">— tidak ada —</option>
+                ${rcp.listRecipes().map((r) => `<option value="${r.id}" ${r.id === t.recipeId ? 'selected' : ''}>${esc(r.emoji)} ${esc(r.name)}</option>`).join('')}
+              </select>
             </label>
             <label class="field"><span>Catatan</span><input class="input" name="note" maxlength="80" value="${esc(t.note || '')}" placeholder="opsional" /></label>
 
@@ -192,6 +201,7 @@ export default {
             repeat,
             days: [...days],
             who: form.who.value,
+            recipeId: form.recipeId.value,
             note: form.note.value,
           });
           sheet.close();

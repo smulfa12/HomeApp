@@ -67,6 +67,7 @@ export function saveTodo(data) {
     days,
     who: (data.who || '').trim(),
     note: (data.note || '').trim(),
+    recipeId: data.recipeId || '',
   };
   return data.id ? todos.update(data.id, clean) : todos.add({ ...clean, doneDates: [], skipDates: [] });
 }
@@ -91,6 +92,11 @@ export function skipOn(id, date) {
   const t = todos.get(id);
   if (!t) return;
   todos.update(id, { skipDates: [...new Set([...(t.skipDates || []), date])].sort() });
+}
+
+/** Lepaskan tautan resep dari kegiatan (resepnya dihapus). */
+export function unlinkRecipe(recipeId) {
+  todos.filter((t) => t.recipeId === recipeId).forEach((t) => todos.update(t.id, { recipeId: '' }));
 }
 
 /** Nama anggota keluarga yang pernah dipakai di kolom "untuk siapa". */

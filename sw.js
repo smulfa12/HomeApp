@@ -2,7 +2,7 @@
  * Service Worker — supaya aplikasi bisa dibuka tanpa internet.
  * Naikkan VERSION setiap kali ada perubahan file agar cache diperbarui.
  */
-const VERSION = 'rumahku-v18';
+const VERSION = 'rumahku-v19';
 const CORE = [
   './',
   './index.html',
@@ -35,6 +35,10 @@ const CORE = [
   './program/activity/kegiatan.js',
   './program/shared/todo-row.js',
   './service/activity.service.js',
+  './service/recipe.service.js',
+  './program/recipe/resep.js',
+  './program/recipe/resep-form.js',
+  './program/recipe/resep-detail.js',
   './program/settings.js',
   './program/shared/item-card.js',
   './program/shared/transaction-form.js',

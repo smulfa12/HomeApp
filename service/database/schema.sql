@@ -55,7 +55,7 @@ create table if not exists public.inv_shopping (
 create index if not exists inv_shopping_date_idx on public.inv_shopping (date);
 
 -- ---------- Keuangan ----------
--- (Database lama: jalankan juga 002_akun_uang.sql, 003_transfer.sql, 004_target_tabungan.sql, 005_riwayat_belanja.sql, 006_kegiatan.sql)
+-- (Database lama: jalankan juga 002_akun_uang.sql, 003_transfer.sql, 004_target_tabungan.sql, 005_riwayat_belanja.sql, 006_kegiatan.sql, 007_resep.sql)
 create table if not exists public.fin_accounts (
   id          text primary key,
   name        text not null,
@@ -126,6 +126,7 @@ create table if not exists public.act_todos (
   days        smallint[] not null default '{}',
   who         text,
   note        text,
+  recipe_id   text,                         -- jadwal masak → rcp_recipes.id
   done_dates  text[] not null default '{}',
   skip_dates  text[] not null default '{}',
   created_at  text,
@@ -133,6 +134,28 @@ create table if not exists public.act_todos (
   created_by  uuid default auth.uid()
 );
 create index if not exists act_todos_date_idx on public.act_todos (date);
+
+-- ---------- Resep ----------
+create table if not exists public.rcp_recipes (
+  id            text primary key,
+  name          text not null,
+  emoji         text,
+  category      text,
+  servings      integer not null default 1 check (servings > 0),
+  prep_minutes  integer not null default 0,
+  cook_minutes  integer not null default 0,
+  ingredients   jsonb not null default '[]'::jsonb,
+  steps         jsonb not null default '[]'::jsonb,
+  nutrition     jsonb not null default '{}'::jsonb,
+  tags          text[] not null default '{}',
+  note          text,
+  source        text,
+  favorite      boolean not null default false,
+  created_at    text,
+  updated_at    text,
+  created_by    uuid default auth.uid()
+);
+create index if not exists rcp_recipes_name_idx on public.rcp_recipes (lower(name));
 
 -- ---------- Pengaturan (lokasi, budget, dll) ----------
 create table if not exists public.app_settings (
@@ -145,7 +168,7 @@ create table if not exists public.app_settings (
 do $$
 declare t text;
 begin
-  foreach t in array array['inv_items','inv_movements','inv_shopping','fin_accounts','fin_transactions','fin_goals','act_todos','app_settings'] loop
+  foreach t in array array['inv_items','inv_movements','inv_shopping','fin_accounts','fin_transactions','fin_goals','act_todos','rcp_recipes','app_settings'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists "keluarga boleh semua" on public.%I', t);
     execute format('create policy "keluarga boleh semua" on public.%I for all to authenticated using (true) with check (true)', t);
