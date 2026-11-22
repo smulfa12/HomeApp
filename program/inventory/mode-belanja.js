@@ -14,7 +14,7 @@ import { navigate } from '../../service/router.service.js';
 
 export default {
   path: '/inventory/mode-belanja',
-  title: 'Mode Belanja',
+  title: 'Shopping Mode',
   autoRefresh: false,
   render(el) {
     const draw = () => {
@@ -23,7 +23,7 @@ export default {
       const stores = shop.recentStores();
 
       el.innerHTML = `
-        ${pageHeader({ title: 'Mode Belanja', subtitle: 'Scan / input barang yang kamu ambil', emoji: '🛍️', tone: 'peach', back: '#/inventory' })}
+        ${pageHeader({ title: 'Shopping Mode', subtitle: 'Scan / input barang yang kamu ambil', emoji: '🛍️', tone: 'peach', back: '#/inventory' })}
 
         <div class="card shop-store">
           <label class="field"><span>Belanja di</span>
@@ -89,7 +89,7 @@ export default {
             : ''
         }
 
-        <a class="link-card" href="#/inventory/riwayat-belanja">🧾 Riwayat belanja <span>›</span></a>
+        <a class="link-card" href="#/inventory/riwayat-belanja">🧾 Shopping History <span>›</span></a>
 
         ${
           s.items.length

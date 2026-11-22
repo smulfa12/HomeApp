@@ -13,7 +13,7 @@ const ERRORS = {
 
 export default {
   path: '/login',
-  title: 'Masuk',
+  title: 'Login',
   autoRefresh: false,
   render(el) {
     if (!needsLogin()) return navigate('/');

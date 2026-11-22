@@ -12,7 +12,7 @@ import { number } from '../../service/format.service.js';
 
 export default {
   path: '/inventory/input',
-  title: 'Input Barang',
+  title: 'Stock In',
   autoRefresh: false, // halaman form: jangan di-render ulang saat ada data baru
   render(el, params) {
     const editing = params.id ? inv.getItem(params.id) : null;
@@ -20,7 +20,7 @@ export default {
 
     el.innerHTML = `
       ${pageHeader({
-        title: editing ? 'Edit Barang' : 'Input Barang',
+        title: editing ? 'Edit Item' : 'Stock In',
         subtitle: editing ? 'Ubah data barang' : 'Scan barcode lalu lengkapi datanya',
         emoji: '📥',
         tone: 'mint',

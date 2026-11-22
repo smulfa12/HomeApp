@@ -8,13 +8,13 @@ import { transactionFormHtml, bindTransactionForm, openTransactionEditor } from 
 
 export default {
   path: '/finance/income',
-  title: 'Input Income',
+  title: 'Income',
   autoRefresh: false, // halaman form: jangan di-render ulang saat ada data baru
   render(el) {
     const draw = () => {
       const recent = fin.listTransactions({ type: 'income' }).slice(0, 5);
       el.innerHTML = `
-        ${pageHeader({ title: 'Input Income', subtitle: 'Catat setiap pemasukan keluarga', emoji: '💰', tone: 'mint', back: '#/finance' })}
+        ${pageHeader({ title: 'Income', subtitle: 'Catat setiap pemasukan keluarga', emoji: '💰', tone: 'mint', back: '#/finance' })}
         ${transactionFormHtml('income')}
         ${recent.length ? `
         <section class="card">

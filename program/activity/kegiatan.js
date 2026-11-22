@@ -30,7 +30,7 @@ const weekStart = (iso) => shift(iso, -((parse(iso).getDay() + 6) % 7));
 
 export default {
   path: '/kegiatan',
-  title: 'Kegiatan',
+  title: 'Activities',
   render(el, params) {
     let date = /^\d{4}-\d{2}-\d{2}$/.test(params.date || '') ? params.date : today();
     let who = '';
@@ -47,7 +47,7 @@ export default {
       const timed = list.filter((t) => t.time);
 
       el.innerHTML = `
-        ${pageHeader({ title: 'Kegiatan', subtitle: longLabel(date), emoji: '✅', tone: 'sky', back: '#/' })}
+        ${pageHeader({ title: 'Activities', subtitle: longLabel(date), emoji: '✅', tone: 'sky', back: '#/' })}
 
         <section class="week">
           <button class="icon-btn icon-btn--sm" data-week="-7" aria-label="Minggu sebelumnya">‹</button>

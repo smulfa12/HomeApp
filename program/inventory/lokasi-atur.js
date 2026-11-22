@@ -7,7 +7,7 @@ import * as inv from '../../service/inventory.service.js';
 
 export default {
   path: '/inventory/lokasi-atur',
-  title: 'Atur Lokasi',
+  title: 'Manage Locations',
   render(el, params) {
     const back = { settings: '#/settings', lokasi: '#/inventory/lokasi', input: '#/inventory/input' }[params.from] || '#/inventory';
 
@@ -16,7 +16,7 @@ export default {
       const unplaced = inv.locationItemCount(inv.NO_LOCATION);
 
       el.innerHTML = `
-        ${pageHeader({ title: 'Atur Lokasi', subtitle: `${list.length} tempat penyimpanan`, emoji: '📍', tone: 'butter', back })}
+        ${pageHeader({ title: 'Manage Locations', subtitle: `${list.length} tempat penyimpanan`, emoji: '📍', tone: 'butter', back })}
 
         <button class="btn btn--primary btn--block" data-add>➕ Tambah Lokasi</button>
 
@@ -43,7 +43,7 @@ export default {
           ${unplaced ? `<p class="muted small">❔ ${unplaced} barang belum punya lokasi. <a class="link" href="#/inventory/lokasi?loc=${encodeURIComponent(inv.NO_LOCATION)}">Lihat</a></p>` : ''}
         </section>
 
-        <a class="link-card" href="#/inventory/lokasi">🗂️ Lihat barang per lokasi <span>›</span></a>`;
+        <a class="link-card" href="#/inventory/lokasi">🗂️ Items by Location <span>›</span></a>`;
 
       el.querySelector('[data-add]').addEventListener('click', () => edit(null));
       el.querySelectorAll('[data-edit]').forEach((b) => b.addEventListener('click', () => edit(b.dataset.edit)));

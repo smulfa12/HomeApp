@@ -49,24 +49,24 @@ function dbCard(s) {
 
 export default {
   path: '/settings',
-  title: 'Pengaturan',
+  title: 'Settings',
   render(el) {
     const cloud = syncState().mode === 'cloud';
     el.innerHTML = `
-      ${pageHeader({ title: 'Pengaturan', subtitle: cloud ? 'Data tersimpan di database Supabase' : 'Data tersimpan di HP ini', emoji: '⚙️', tone: 'sky' })}
+      ${pageHeader({ title: 'Settings', subtitle: cloud ? 'Data tersimpan di database Supabase' : 'Data tersimpan di HP ini', emoji: '⚙️', tone: 'sky' })}
       <div data-db>${dbCard(syncState())}</div>
       <section class="card settings">
-        <a class="setting-row" href="#/finance/akun?from=settings"><span>💳</span><div><strong>Dompet & Rekening</strong><small>Tambah / atur tempat penyimpanan uang & hutang</small></div></a>
-        <a class="setting-row" href="#/inventory/lokasi-atur?from=settings"><span>📍</span><div><strong>Lokasi Inventory</strong><small>Atur tempat penyimpanan barang</small></div></a>
-        <a class="setting-row" href="#/finance/kategori?from=settings"><span>🗂️</span><div><strong>Kategori Budget</strong><small>Atur kategori pengeluaran & pemasukan sendiri</small></div></a>
+        <a class="setting-row" href="#/finance/akun?from=settings"><span>💳</span><div><strong>Accounts</strong><small>Tambah / atur tempat penyimpanan uang & hutang</small></div></a>
+        <a class="setting-row" href="#/inventory/lokasi-atur?from=settings"><span>📍</span><div><strong>Inventory Locations</strong><small>Atur tempat penyimpanan barang</small></div></a>
+        <a class="setting-row" href="#/finance/kategori?from=settings"><span>🗂️</span><div><strong>Budget Categories</strong><small>Atur kategori pengeluaran & pemasukan sendiri</small></div></a>
         <a class="setting-row" href="#/finance/transfer"><span>🔁</span><div><strong>Transfer</strong><small>Pindah saldo antar dompet / rekening, bayar hutang</small></div></a>
-        <button class="setting-row" data-export><span>💾</span><div><strong>Backup data</strong><small>Unduh file cadangan (.json)</small></div></button>
-        <label class="setting-row"><input type="file" accept="application/json" hidden data-import /><span>📂</span><div><strong>Pulihkan data</strong><small>Dari file backup${cloud ? ' (menggantikan data di database)' : ''}</small></div></label>
-        <button class="setting-row" data-demo><span>🧸</span><div><strong>Isi data contoh</strong><small>Untuk mencoba semua fitur</small></div></button>
-        <button class="setting-row setting-row--danger" data-reset><span>🗑️</span><div><strong>Hapus semua data</strong><small>${cloud ? 'Termasuk di database, untuk semua anggota keluarga' : 'Tidak bisa dibatalkan'}</small></div></button>
+        <button class="setting-row" data-export><span>💾</span><div><strong>Backup</strong><small>Unduh file cadangan (.json)</small></div></button>
+        <label class="setting-row"><input type="file" accept="application/json" hidden data-import /><span>📂</span><div><strong>Restore</strong><small>Dari file backup${cloud ? ' (menggantikan data di database)' : ''}</small></div></label>
+        <button class="setting-row" data-demo><span>🧸</span><div><strong>Load Sample Data</strong><small>Untuk mencoba semua fitur</small></div></button>
+        <button class="setting-row setting-row--danger" data-reset><span>🗑️</span><div><strong>Delete All Data</strong><small>${cloud ? 'Termasuk di database, untuk semua anggota keluarga' : 'Tidak bisa dibatalkan'}</small></div></button>
       </section>
       <section class="card">
-        <h2>📱 Pasang di HP</h2>
+        <h2>📱 Install on Phone</h2>
         <p class="small muted">Android (Chrome): menu ⋮ → <b>Tambahkan ke layar utama</b>.<br/>iPhone (Safari): tombol Bagikan → <b>Add to Home Screen</b>.</p>
       </section>
       <p class="muted small center">Rumahku ${APP_VERSION} · dibuat dengan 🤍</p>`;

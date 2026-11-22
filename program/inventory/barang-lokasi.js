@@ -10,7 +10,7 @@ const TONES = ['mint', 'peach', 'sky', 'lavender', 'butter', 'rose'];
 
 export default {
   path: '/inventory/lokasi',
-  title: 'Barang per Lokasi',
+  title: 'Items by Location',
   render(el, params) {
     const groups = inv.groupByLocation();
     // urutan mengikuti menu Atur Lokasi; "Belum ditentukan" di akhir
@@ -20,7 +20,7 @@ export default {
     let query = '';
 
     el.innerHTML = `
-      ${pageHeader({ title: 'Barang per Lokasi', subtitle: `${names.length} lokasi penyimpanan`, emoji: '🗂️', tone: 'butter', back: '#/inventory' })}
+      ${pageHeader({ title: 'Items by Location', subtitle: `${names.length} lokasi penyimpanan`, emoji: '🗂️', tone: 'butter', back: '#/inventory' })}
       ${
         !names.length
           ? `<div class="card">${emptyState('🗂️', 'Belum ada barang', 'Barang yang kamu input akan muncul di sini.', `<a class="btn btn--primary" href="#/inventory/input">Input Barang</a>`)}</div>`

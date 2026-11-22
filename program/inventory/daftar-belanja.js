@@ -11,7 +11,7 @@ import { number, rupiah, dateLabel, today } from '../../service/format.service.j
 
 export default {
   path: '/inventory/belanja',
-  title: 'Daftar Belanja',
+  title: 'Shopping List',
   render(el) {
     const draw = () => {
       const list = inv.shoppingList();
@@ -20,7 +20,7 @@ export default {
       list.forEach((i) => (byCat[i.category] ||= []).push(i));
 
       el.innerHTML = `
-        ${pageHeader({ title: 'Daftar Belanja', subtitle: 'Barang yang stoknya di bawah minimum', emoji: '🛒', tone: 'rose', back: '#/inventory' })}
+        ${pageHeader({ title: 'Shopping List', subtitle: 'Barang yang stoknya di bawah minimum', emoji: '🛒', tone: 'rose', back: '#/inventory' })}
         ${
           !list.length
             ? `<div class="card">${emptyState('🎉', 'Semua stok aman!', 'Tidak ada barang di bawah minimum stok.', `<a class="btn btn--soft" href="#/inventory/opname">Lakukan Stock Opname</a>`)}</div>`
@@ -56,11 +56,11 @@ export default {
             </section>`
             )
             .join('')}
-          <p class="muted small center">Centang ✓ barang yang sudah diambil → masuk keranjang Mode Belanja. Stok bertambah saat “Selesai & Bayar”.</p>`
+          <p class="muted small center">Centang ✓ barang yang sudah diambil → masuk keranjang Shopping Mode. Stok bertambah saat “Selesai & Bayar”.</p>`
         }`;
 
       const text = () =>
-        `🛒 *Daftar Belanja* (${dateLabel(today())})\n\n` +
+        `🛒 *Shopping List* (${dateLabel(today())})\n\n` +
         list.map((i, n) => `${n + 1}. ${i.name} — ${number(i.needed)} ${i.unit}`).join('\n') +
         (estimate ? `\n\nEstimasi: ${rupiah(estimate)}` : '');
 
@@ -99,7 +99,7 @@ export default {
       bar.innerHTML = s.items.length
         ? `<div><small class="muted">🛒 ${s.items.length} di keranjang</small><strong>${rupiah(shop.sessionTotal(s))}</strong></div>
            <a class="btn btn--peach" href="#/inventory/mode-belanja">🛍️ Lanjut Belanja</a>`
-        : `<div><small class="muted">Sedang di toko?</small><strong>Mode Belanja</strong></div>
+        : `<div><small class="muted">Sedang di toko?</small><strong>Shopping Mode</strong></div>
            <a class="btn btn--peach" href="#/inventory/mode-belanja">🛍️ Mulai Belanja</a>`;
       el.appendChild(bar);
     };

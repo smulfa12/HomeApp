@@ -10,12 +10,12 @@ import { navigate } from '../../service/router.service.js';
 
 export default {
   path: '/inventory/riwayat-belanja',
-  title: 'Riwayat Belanja',
+  title: 'Shopping History',
   render(el) {
     let range;
 
     el.innerHTML = `
-      ${pageHeader({ title: 'Riwayat Belanja', subtitle: 'Catatan setiap kali belanja', emoji: '🧾', tone: 'sky', back: '#/inventory' })}
+      ${pageHeader({ title: 'Shopping History', subtitle: 'Catatan setiap kali belanja', emoji: '🧾', tone: 'sky', back: '#/inventory' })}
       <a class="btn btn--peach btn--block" href="#/inventory/mode-belanja">🛍️ ${shop.hasSession() ? `Lanjutkan belanja (${shop.sessionCount()} di keranjang)` : 'Mulai Belanja'}</a>
       <div data-period></div>
       <div data-content></div>`;
@@ -25,7 +25,7 @@ export default {
     const draw = () => {
       const trips = shop.listTrips(range);
       if (!trips.length) {
-        content.innerHTML = `<div class="card">${emptyState('🧾', 'Belum ada riwayat', 'Belanja lewat Mode Belanja akan tercatat di sini.')}</div>`;
+        content.innerHTML = `<div class="card">${emptyState('🧾', 'Belum ada riwayat', 'Belanja lewat Shopping Mode akan tercatat di sini.')}</div>`;
         return;
       }
       const total = trips.reduce((s, t) => s + (Number(t.total) || 0), 0);

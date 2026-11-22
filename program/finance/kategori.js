@@ -11,7 +11,7 @@ const LABEL = { expense: 'Pengeluaran', income: 'Pemasukan' };
 
 export default {
   path: '/finance/kategori',
-  title: 'Kategori',
+  title: 'Categories',
   render(el, params) {
     let type = params.type === 'income' ? 'income' : 'expense';
     const back = { settings: '#/settings', budget: '#/finance/budget' }[params.from] || '#/finance';
@@ -45,11 +45,11 @@ export default {
       };
 
       el.innerHTML = `
-        ${pageHeader({ title: 'Kategori', subtitle: 'Atur sendiri daftar kategori budget', emoji: '🗂️', tone: 'butter', back })}
+        ${pageHeader({ title: 'Categories', subtitle: 'Atur sendiri daftar kategori budget', emoji: '🗂️', tone: 'butter', back })}
 
         <div class="segmented">
-          <button class="${type === 'expense' ? 'on' : ''}" data-type="expense">⬇️ Pengeluaran</button>
-          <button class="${type === 'income' ? 'on' : ''}" data-type="income">⬆️ Pemasukan</button>
+          <button class="${type === 'expense' ? 'on' : ''}" data-type="expense">⬇️ Expense</button>
+          <button class="${type === 'income' ? 'on' : ''}" data-type="income">⬆️ Income</button>
         </div>
 
         <button class="btn btn--primary btn--block" data-add>➕ Tambah Kategori ${LABEL[type]}</button>
