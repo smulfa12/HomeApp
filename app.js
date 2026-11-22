@@ -30,6 +30,11 @@ import riwayatBelanja from './program/inventory/riwayat-belanja.js';
 // Menu Utama Kegiatan
 import kegiatan from './program/activity/kegiatan.js';
 
+// Menu Utama Resep
+import resep from './program/recipe/resep.js';
+import resepForm from './program/recipe/resep-form.js';
+import resepDetail from './program/recipe/resep-detail.js';
+
 // Menu Utama Financial Rumah
 import financeMenu from './program/finance/finance-menu.js';
 import inputIncome from './program/finance/input-income.js';
@@ -46,6 +51,7 @@ import kategori from './program/finance/kategori.js';
 const MODULES = [
   login, home, settings,
   kegiatan,
+  resep, resepForm, resepDetail,
   inventoryMenu, inputBarang, stockKeluar, stockOpname, daftarBelanja, modeBelanja, riwayatBelanja, barangLokasi, lokasiAtur,
   financeMenu, inputIncome, inputExpense, laporanPengeluaran, laporanPemasukan, neracaLabaRugi, budget, akun, transfer, targetTabungan, kategori,
 ];
@@ -53,7 +59,7 @@ const MODULES = [
 /** Tandai tab navigasi bawah yang aktif sesuai halaman. */
 function highlightNav(path) {
   document.body.classList.toggle('auth-page', path === '/login');
-  const section = ['inventory', 'finance', 'kegiatan', 'settings'].find((s) => path.startsWith('/' + s)) || 'home';
+  const section = ['inventory', 'finance', 'kegiatan', 'resep', 'settings'].find((s) => path.startsWith('/' + s)) || 'home';
   document.querySelectorAll('.tabbar a').forEach((a) => a.classList.toggle('on', a.dataset.tab === section));
 }
 

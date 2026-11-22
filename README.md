@@ -26,6 +26,16 @@ Bisa dipasang ke layar utama HP dan tetap jalan tanpa internet (kecuali scan not
 | **Untuk siapa** | Tandai kegiatan per anggota keluarga & filter. |
 | **Penanda waktu** | Sedang berlangsung & terlewat disorot; widget di Beranda. |
 
+### 🍳 Menu Utama Resep
+| Fitur | Isi |
+|------|-----|
+| **Daftar menu masak** | Cari (nama / bahan / label), kategori, favorit. |
+| **Resep** | Bahan (bisa dihitung ulang per porsi), langkah (ketuk bila selesai), tips, label. |
+| **Gizi per porsi** | Energi, protein, karbohidrat, lemak, serat, gula, natrium — per porsi & total. |
+| **Stok bahan** | Bahan dicocokkan dengan Inventory (ada / menipis / habis); bahan kurang → keranjang Mode Belanja. |
+| **Jadwal masak** | "Jadwalkan masak" membuat kegiatan tertaut resep di Kegiatan; Rencana menu 7 hari. |
+| **✨ AI** | Tempel resep / ketik nama masakan → AI menyusun bahan, langkah & perkiraan gizi; tombol hitung gizi dengan AI. |
+
 ### 💰 Menu Utama Financial Rumah
 | # | Menu | Isi |
 |---|------|-----|
@@ -54,6 +64,7 @@ HomeApp/
 │   ├── home.js
 │   ├── settings.js
 │   ├── activity/         # menu Kegiatan (to-do harian)
+│   ├── recipe/           # menu Resep (resep, gizi, rencana menu)
 │   ├── inventory/
 │   │   ├── inventory-menu.js
 │   │   ├── input-barang.js
@@ -73,6 +84,8 @@ HomeApp/
 │   └── shared/           # komponen yang dipakai beberapa menu
 │
 ├── service/              # ⚙️ SEMUA SERVICE (logika & data)
+│   ├── ai/recipe-ai.ts        # Supabase Edge Function: AI resep (Claude)
+│   ├── recipe.service.js      # resep, gizi, stok bahan, jadwal masak
 │   ├── supabase.config.js     # 🔑 URL & anon key Supabase (isi di sini)
 │   ├── database.service.js    # akses database Supabase (login, baca, tulis, realtime)
 │   ├── sync.service.js        # sinkron HP ⇄ database, antrian offline
@@ -133,6 +146,7 @@ Jalankan file yang belum pernah dijalankan, berurutan, di **SQL Editor** Supabas
 | `004_target_tabungan.sql` | target tabungan (dikaitkan ke satu / beberapa rekening) |
 | `005_riwayat_belanja.sql` | riwayat belanja dari Mode Belanja |
 | `006_kegiatan.sql` | to-do list kegiatan harian |
+| `007_resep.sql` | resep, gizi, & tautan jadwal masak di Kegiatan |
 
 Kalau aplikasi versi baru dipakai sebelum SQL-nya dijalankan, perubahan tetap aman tersimpan di HP
 (menu Atur menampilkan pesan "Database perlu diperbarui") dan otomatis terkirim setelah SQL dijalankan.
@@ -149,6 +163,21 @@ Kalau `supabase.config.js` dibiarkan kosong, aplikasi jalan dalam **mode lokal**
 | `app_settings` | lokasi, budget, tanggal opname terakhir |
 
 Semua tabel dilindungi Row Level Security: hanya user yang login yang bisa membaca & menulis.
+
+## ✨ Resep + AI (opsional)
+
+Fitur AI memakai **Claude** (Anthropic API) lewat **Supabase Edge Function**, sehingga kunci API
+tersimpan aman di server — tidak pernah ada di kode aplikasi (yang publik di GitHub).
+
+1. Buat kunci API di <https://console.anthropic.com> → **API Keys** (perlu isi saldo/kredit; biaya
+   per resep kira-kira beberapa ratus rupiah — model `claude-opus-5-5`, effort `medium`).
+2. Supabase → **Edge Functions → Secrets** → tambah `ANTHROPIC_API_KEY` = kunci tadi.
+3. Supabase → **Edge Functions → Deploy a new function → Via Editor**, nama fungsi **`recipe-ai`**,
+   paste isi `service/ai/recipe-ai.ts`, lalu **Deploy**.
+4. Di pengaturan fungsi `recipe-ai`, matikan **Verify JWT** (fungsi sudah memeriksa login sendiri).
+5. Buka aplikasi → Resep → **✨ Tambah dengan AI**.
+
+Tanpa langkah ini, menu Resep tetap bisa dipakai dengan menulis resep sendiri.
 
 ## 🚀 Menjalankan
 

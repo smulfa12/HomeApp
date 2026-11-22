@@ -532,3 +532,4 @@ select.input {
 .scanner__feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .scanner__feed li { padding: 8px 12px; border-radius: 12px; background: var(--ok-soft); color: var(--ok); font-weight: 800; font-size: 13.5px; }
 .scanner__feed li + li { opacity: 0.55; background: var(--bg); color: var(--muted); }
+.btn--wrap { white-space: normal; text-align: center; line-height: 1.3; padding-top: 10px; padding-bottom: 10px; }

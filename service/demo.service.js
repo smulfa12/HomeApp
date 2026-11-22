@@ -74,4 +74,23 @@ export function loadDemoData() {
     Transportasi: 600000, 'Makan di Luar': 400000, Pendidikan: 1200000, Kesehatan: 300000, Hiburan: 300000,
   };
   save('fin.budgets', { [m0]: plan, [m1]: plan });
+
+  // Resep contoh
+  const ing = (name, qty, unit, note = '') => ({ name, qty, unit, note });
+  collection('rcp.recipes').replaceAll([
+    {
+      id: uid(), name: 'Nasi Goreng Telur', emoji: '🍳', category: 'Sarapan', servings: 2, prepMinutes: 10, cookMinutes: 10,
+      ingredients: [ing('nasi putih', 400, 'gram'), ing('telur', 2, 'butir'), ing('bawang putih', 3, 'siung', 'cincang'), ing('bawang merah', 4, 'butir', 'iris'), ing('kecap manis', 2, 'sdm'), ing('minyak goreng', 2, 'sdm'), ing('garam', 0, 'secukupnya')],
+      steps: ['Panaskan minyak, tumis bawang merah & bawang putih sampai harum.', 'Masukkan telur, orak-arik.', 'Masukkan nasi, kecap manis, dan garam. Aduk rata sampai panas.', 'Sajikan hangat.'],
+      nutrition: { calories: 520, protein_g: 15, carbs_g: 78, fat_g: 16, fiber_g: 2, sugar_g: 9, sodium_mg: 820 },
+      tags: ['cepat', 'anak'], note: 'Pakai nasi sisa semalam supaya tidak lembek.', source: 'manual', favorite: true, createdAt: now, updatedAt: now,
+    },
+    {
+      id: uid(), name: 'Sayur Bayam Jagung', emoji: '🥬', category: 'Sayur', servings: 4, prepMinutes: 10, cookMinutes: 15,
+      ingredients: [ing('bayam', 1, 'ikat', 'petik daunnya'), ing('jagung manis', 1, 'buah', 'pipil'), ing('bawang merah', 3, 'butir', 'iris'), ing('air', 1, 'liter'), ing('garam', 0, 'secukupnya'), ing('gula', 1, 'sdt')],
+      steps: ['Didihkan air bersama bawang merah.', 'Masukkan jagung, masak 10 menit.', 'Masukkan bayam, garam, dan gula. Masak sebentar sampai bayam layu.'],
+      nutrition: { calories: 85, protein_g: 4, carbs_g: 17, fat_g: 1, fiber_g: 3, sugar_g: 5, sodium_mg: 310 },
+      tags: ['sehat', 'anak'], note: '', source: 'manual', favorite: false, createdAt: now, updatedAt: now,
+    },
+  ]);
 }

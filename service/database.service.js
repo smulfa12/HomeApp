@@ -32,7 +32,11 @@ export const TABLES = {
   },
   'act.todos': {
     table: 'act_todos',
-    columns: ['id', 'title', 'icon', 'time', 'endTime', 'date', 'repeat', 'days', 'who', 'note', 'doneDates', 'skipDates', 'createdAt', 'updatedAt'],
+    columns: ['id', 'title', 'icon', 'time', 'endTime', 'date', 'repeat', 'days', 'who', 'note', 'recipeId', 'doneDates', 'skipDates', 'createdAt', 'updatedAt'],
+  },
+  'rcp.recipes': {
+    table: 'rcp_recipes',
+    columns: ['id', 'name', 'emoji', 'category', 'servings', 'prepMinutes', 'cookMinutes', 'ingredients', 'steps', 'nutrition', 'tags', 'note', 'source', 'favorite', 'createdAt', 'updatedAt'],
   },
   'fin.goals': {
     table: 'fin_goals',
@@ -58,7 +62,7 @@ export function toRow(key, obj) {
 }
 
 /** Nilai pengganti NULL dari database untuk kolom non-teks. */
-const EMPTY = { archived: false, accountIds: [], milestone: 0, items: [], days: [], doneDates: [], skipDates: [] };
+const EMPTY = { archived: false, accountIds: [], milestone: 0, items: [], days: [], doneDates: [], skipDates: [], ingredients: [], steps: [], tags: [], nutrition: {}, favorite: false };
 
 export function fromRow(key, row) {
   const out = {};
@@ -167,6 +171,24 @@ export async function clearRemote() {
   const c = await client();
   for (const key of Object.keys(TABLES)) await replaceTable(key, []);
   must(await c.from('app_settings').delete().not('key', 'is', null));
+}
+
+/* ---------- Edge Function (mis. AI resep) ---------- */
+
+/** Panggil Supabase Edge Function. Melempar Error dengan pesan dari fungsi bila gagal. */
+export async function invokeFunction(name, body) {
+  const c = await client();
+  const { data, error } = await c.functions.invoke(name, { body });
+  if (error) {
+    let msg = error.message;
+    try {
+      const j = await error.context?.json?.();
+      if (j?.error) msg = j.error;
+    } catch { /* bukan JSON */ }
+    if (/Failed to send|fetch/i.test(msg)) msg = 'Fungsi AI belum dipasang di Supabase atau tidak ada internet';
+    throw new Error(msg);
+  }
+  return data;
 }
 
 /* ---------- Realtime ---------- */
