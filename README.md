@@ -18,6 +18,14 @@ Bisa dipasang ke layar utama HP dan tetap jalan tanpa internet (kecuali scan not
 | 7 | **Mode Belanja** | Dipakai di supermarket: scan barcode terus-menerus / input manual / ambil dari Daftar Belanja → keranjang (jumlah, harga, total berjalan) → Selesai & Bayar: stok bertambah, pengeluaran tercatat, tersimpan di Riwayat Belanja. |
 | 8 | **Riwayat Belanja** | Log setiap belanja per periode: toko, isi barang × harga, total, dibayar dari; belanja ulang barang yang sama. |
 
+### ✅ Menu Utama Kegiatan
+| Fitur | Isi |
+|------|-----|
+| **To-do harian** | Kegiatan per hari urut jam (mulai–selesai), checklist selesai, progres harian, strip mingguan. |
+| **Rutin** | Sekali / setiap hari / Senin–Jumat / hari tertentu; hapus untuk satu tanggal saja. |
+| **Untuk siapa** | Tandai kegiatan per anggota keluarga & filter. |
+| **Penanda waktu** | Sedang berlangsung & terlewat disorot; widget di Beranda. |
+
 ### 💰 Menu Utama Financial Rumah
 | # | Menu | Isi |
 |---|------|-----|
@@ -45,6 +53,7 @@ HomeApp/
 ├── program/              # 📱 SEMUA PROGRAM (tampilan tiap menu)
 │   ├── home.js
 │   ├── settings.js
+│   ├── activity/         # menu Kegiatan (to-do harian)
 │   ├── inventory/
 │   │   ├── inventory-menu.js
 │   │   ├── input-barang.js
@@ -123,6 +132,7 @@ Jalankan file yang belum pernah dijalankan, berurutan, di **SQL Editor** Supabas
 | `003_transfer.sql` | transfer antar dompet / rekening (+ biaya admin) |
 | `004_target_tabungan.sql` | target tabungan (dikaitkan ke satu / beberapa rekening) |
 | `005_riwayat_belanja.sql` | riwayat belanja dari Mode Belanja |
+| `006_kegiatan.sql` | to-do list kegiatan harian |
 
 Kalau aplikasi versi baru dipakai sebelum SQL-nya dijalankan, perubahan tetap aman tersimpan di HP
 (menu Atur menampilkan pesan "Database perlu diperbarui") dan otomatis terkirim setelah SQL dijalankan.
