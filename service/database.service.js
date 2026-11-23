@@ -196,3 +196,25 @@ export async function subscribe(handler) {
   channel.subscribe();
   return () => c.removeChannel(channel);
 }
+
+/* ---------- Role & akses menu (tabel app_users) ---------- */
+
+/** Baris akses milik user yang sedang login (null bila belum terdaftar). */
+export async function fetchMyAccess() {
+  const c = await client();
+  const session = must(await c.auth.getSession()).session;
+  if (!session) return null;
+  const rows = must(await c.from('app_users').select('user_id, email, role, menus').eq('user_id', session.user.id));
+  return rows[0] ? { ...rows[0], self: true } : { user_id: session.user.id, email: session.user.email, role: 'user', menus: [], missing: true };
+}
+
+export async function listAppUsers() {
+  const c = await client();
+  return must(await c.from('app_users').select('user_id, email, role, menus').order('email'));
+}
+
+export async function updateAppUser(userId, patch) {
+  const c = await client();
+  const data = must(await c.from('app_users').update({ ...patch, updated_at: new Date().toISOString() }).eq('user_id', userId).select('user_id'));
+  if (!data.length) throw new Error('Tidak diizinkan (hanya admin yang bisa mengubah)');
+}

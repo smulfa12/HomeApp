@@ -5,6 +5,7 @@
 import { pageHeader, esc, emptyState } from '../../service/ui.service.js';
 import { today } from '../../service/format.service.js';
 import * as rcp from '../../service/recipe.service.js';
+import { can } from '../../service/access.service.js';
 
 export default {
   path: '/resep',
@@ -29,7 +30,7 @@ export default {
       const plan = rcp.mealPlan(7);
       const count = plan.reduce((s, d) => s + d.meals.length, 0);
       el.querySelector('[data-plan]').innerHTML = `
-        <div class="card__head"><h2>📅 7-Day Meal Plan</h2><a class="link" href="#/kegiatan">Activities ›</a></div>
+        <div class="card__head"><h2>📅 7-Day Meal Plan</h2>${can('kegiatan') ? '<a class="link" href="#/kegiatan">Activities ›</a>' : ''}</div>
         ${count
           ? `<ul class="plan">${plan
               .map(({ date, meals }) => {

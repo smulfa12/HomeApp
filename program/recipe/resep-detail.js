@@ -8,6 +8,7 @@ import * as rcp from '../../service/recipe.service.js';
 import * as act from '../../service/activity.service.js';
 import * as shop from '../../service/shopping.service.js';
 import { navigate } from '../../service/router.service.js';
+import { can } from '../../service/access.service.js';
 
 const STOCK = {
   ok: ['✅', 'ada'],
@@ -37,7 +38,7 @@ export default {
         ${pageHeader({ title: r.name, subtitle: `${r.category}${mins ? ` · ⏱️ ${mins} menit` : ''}`, emoji: r.emoji || '🍳', tone: 'peach', back: '#/resep' })}
 
         <div class="row gap-sm">
-          <button class="btn btn--primary grow" data-schedule>📅 Jadwalkan masak</button>
+          ${can('kegiatan') ? '<button class="btn btn--primary grow" data-schedule>📅 Jadwalkan masak</button>' : '<span class="grow"></span>'}
           <button class="btn btn--soft btn--icon" data-fav aria-label="Favorit">${r.favorite ? '⭐' : '☆'}</button>
           <a class="btn btn--soft btn--icon" href="#/resep/form?id=${r.id}" aria-label="Edit">✏️</a>
         </div>
@@ -64,8 +65,8 @@ export default {
                 })
                 .join('')}</ul>`
             : '<p class="muted small">Belum ada bahan.</p>'}
-          ${missing.length ? `<button class="btn btn--soft btn--block btn--wrap" data-cart>🛒 ${missing.length} bahan kurang → keranjang belanja</button>` : ''}
-          <p class="muted small">Status stok dicocokkan otomatis dengan nama barang di Inventory.</p>
+          ${missing.length && can('inventory') ? `<button class="btn btn--soft btn--block btn--wrap" data-cart>🛒 ${missing.length} bahan kurang → keranjang belanja</button>` : ''}
+          ${can('inventory') ? '<p class="muted small">Status stok dicocokkan otomatis dengan nama barang di Inventory.</p>' : ''}
         </section>
 
         <section class="card">
@@ -105,7 +106,7 @@ export default {
         missing.forEach((s) => shop.addToSession(s.item, 1));
         toast(`🛒 ${missing.length} bahan masuk keranjang Shopping Mode`);
       });
-      el.querySelector('[data-schedule]').addEventListener('click', () => schedule(r));
+      el.querySelector('[data-schedule]')?.addEventListener('click', () => schedule(r));
       el.querySelector('[data-del]').addEventListener('click', async () => {
         if (!(await confirmDialog(`Hapus resep "${r.name}"? Jadwal masak di Activities tetap ada.`, { okText: 'Hapus', danger: true }))) return;
         rcp.deleteRecipe(r.id);

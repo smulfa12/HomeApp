@@ -9,6 +9,7 @@ import { scanBarcode } from '../../service/barcode.service.js';
 import { rupiah, number, parseNumber, today } from '../../service/format.service.js';
 import * as inv from '../../service/inventory.service.js';
 import * as fin from '../../service/finance.service.js';
+import { can } from '../../service/access.service.js';
 import * as shop from '../../service/shopping.service.js';
 import { navigate } from '../../service/router.service.js';
 
@@ -275,8 +276,8 @@ export default {
             <label class="field"><span>Total dibayar (sesuai struk)</span>
               <div class="money tone-peach"><span>Rp</span><input name="total" inputmode="numeric" placeholder="0" value="${total ? total.toLocaleString('id-ID') : ''}" /></div>
             </label>
-            <label class="switch-row"><input type="checkbox" name="record" checked /> <span>Catat sebagai pengeluaran di Keuangan</span></label>
-            <div class="grid-2" data-exp>
+            <label class="switch-row ${can('finance') ? '' : 'hidden'}"><input type="checkbox" name="record" ${can('finance') ? 'checked' : ''} /> <span>Catat sebagai pengeluaran di Keuangan</span></label>
+            <div class="grid-2 ${can('finance') ? '' : 'hidden'}" data-exp>
               <label class="field"><span>Kategori</span><select class="input" name="category">${options(cats, category, { valueKey: 'name', labelKey: (c) => `${c.emoji} ${c.name}` })}</select></label>
               <label class="field"><span>Dibayar dari</span><select class="input" name="accountId">${options(accounts, accountId, { valueKey: 'id', labelKey: (a) => `${fin.accountIcon(a)} ${a.name}` })}</select></label>
             </div>
