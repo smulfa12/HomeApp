@@ -595,3 +595,27 @@ a.setting-row { color: inherit; }
 .user-card { display: flex; flex-direction: column; gap: 10px; }
 .user-card__email { font-size: 15px; overflow-wrap: anywhere; min-width: 0; }
 .segmented button:disabled, .chip:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ---------- Trends (grafik pengeluaran & harga) ---------- */
+.input--sm { padding-top: 8px; padding-bottom: 8px; font-size: 14px; min-width: 0; }
+.trend-hero { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
+.trend-hero > small { color: var(--muted); font-weight: 700; }
+.trend-hero strong { font-size: 26px; line-height: 1.2; }
+.trend-hero strong small { font-size: 14px; color: var(--muted); font-weight: 700; }
+.delta { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.delta--up { background: var(--danger-soft); color: var(--danger); }
+.delta--down { background: var(--ok-soft); color: var(--ok); }
+.delta--flat { background: var(--tile); color: var(--muted); }
+.trend-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+.trend-stats > div { background: var(--bg); border-radius: 14px; padding: 8px 10px; display: flex; flex-direction: column; min-width: 0; }
+.trend-stats small { color: var(--muted); font-size: 11.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trend-stats b { font-size: 14px; }
+.trend-table { list-style: none; margin: 0; padding: 0; }
+.trend-table li { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
+.trend-table li:last-child { border-bottom: 0; }
+.trend-table li > span { display: flex; flex-direction: column; min-width: 0; font-weight: 700; }
+.trend-table li > span.right { align-items: flex-end; gap: 3px; flex: none; }
+.trend-table small { color: var(--muted); font-weight: 600; font-size: 12px; }
+.mover-list .link-row { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 8px; text-align: left; font-weight: 700; font-size: 14px; padding: 2px 0; }
+.mover-list .link-row > span { display: flex; flex-direction: column; min-width: 0; }
+.mover-list small { color: var(--muted); font-weight: 600; font-size: 12px; }
