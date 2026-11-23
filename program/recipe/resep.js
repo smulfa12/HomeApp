@@ -7,6 +7,8 @@ import { today } from '../../service/format.service.js';
 import * as rcp from '../../service/recipe.service.js';
 import { can } from '../../service/access.service.js';
 
+const DAY = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
 export default {
   path: '/resep',
   title: 'Recipes',
