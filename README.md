@@ -36,7 +36,6 @@ Bisa dipasang ke layar utama HP dan tetap jalan tanpa internet (kecuali scan not
 | **Gizi per porsi** | Energi, protein, karbohidrat, lemak, serat, gula, natrium — per porsi & total. |
 | **Stok bahan** | Bahan dicocokkan dengan Inventory (ada / menipis / habis); bahan kurang → keranjang Mode Belanja. |
 | **Jadwal masak** | "Jadwalkan masak" membuat kegiatan tertaut resep di Kegiatan; Rencana menu 7 hari. |
-| **✨ AI** | Tempel resep / ketik nama masakan → AI menyusun bahan, langkah & perkiraan gizi; tombol hitung gizi dengan AI. |
 
 ### 💰 Menu Utama Financial Rumah
 | # | Menu | Isi |
@@ -86,7 +85,6 @@ HomeApp/
 │   └── shared/           # komponen yang dipakai beberapa menu
 │
 ├── service/              # ⚙️ SEMUA SERVICE (logika & data)
-│   ├── ai/recipe-ai.ts        # Supabase Edge Function: AI resep (Claude)
 │   ├── recipe.service.js      # resep, gizi, stok bahan, jadwal masak
 │   ├── supabase.config.js     # 🔑 URL & anon key Supabase (isi di sini)
 │   ├── database.service.js    # akses database Supabase (login, baca, tulis, realtime)
@@ -165,25 +163,6 @@ Kalau `supabase.config.js` dibiarkan kosong, aplikasi jalan dalam **mode lokal**
 | `app_settings` | lokasi, budget, tanggal opname terakhir |
 
 Semua tabel dilindungi Row Level Security: hanya user yang login yang bisa membaca & menulis.
-
-## ✨ Resep + AI (opsional)
-
-Fitur AI memakai **Claude** (Anthropic API) lewat **Supabase Edge Function**, sehingga kunci API
-tersimpan aman di server — tidak pernah ada di kode aplikasi (yang publik di GitHub).
-
-1. Buat kunci API di <https://console.anthropic.com> → **API Keys** (perlu isi saldo/kredit; biaya
-   per resep kira-kira beberapa ratus rupiah — model `claude-opus-5-5`, effort `medium`).
-2. Supabase → **Edge Functions → Secrets** → tambah `ANTHROPIC_API_KEY` = kunci tadi.
-3. Supabase → **Edge Functions → Deploy a new function → Via Editor**, nama fungsi **`recipe-ai`**,
-   paste isi `service/ai/recipe-ai.ts`, lalu **Deploy**.
-4. Di pengaturan fungsi `recipe-ai`, matikan **Verify JWT** (fungsi sudah memeriksa login sendiri).
-5. **Cek status:** buka `https://<project>.supabase.co/functions/v1/recipe-ai` di browser. Harus tampil
-   `"ok": true` dan `"anthropicKey": "terisi"`.
-6. Buka aplikasi → Recipes → **✨ Tambah dengan AI**. Bila gagal, aplikasi menampilkan penyebabnya
-   (404 = fungsi belum di-deploy / nama salah, 401 = Verify JWT masih aktif, 503 = gagal start → cek Logs,
-   secret belum diisi, saldo Anthropic habis, dll.).
-
-Tanpa langkah ini, menu Resep tetap bisa dipakai dengan menulis resep sendiri.
 
 ## 🚀 Menjalankan
 

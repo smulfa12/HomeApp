@@ -173,47 +173,6 @@ export async function clearRemote() {
   must(await c.from('app_settings').delete().not('key', 'is', null));
 }
 
-/* ---------- Edge Function (mis. AI resep) ---------- */
-
-/** Penjelasan untuk error dari Supabase (bukan dari kode fungsi). */
-const FUNCTION_HINTS = {
-  401: 'Ditolak Supabase (401). Matikan "Verify JWT" di pengaturan fungsi, lalu coba keluar & login lagi di aplikasi.',
-  403: 'Ditolak Supabase (403). Coba keluar & login lagi di aplikasi.',
-  404: 'Fungsi belum ada (404). Deploy Edge Function dengan nama persis "recipe-ai" — lihat README → Resep + AI.',
-  500: 'Fungsi error saat dijalankan (500). Cek Supabase → Edge Functions → recipe-ai → Logs, dan pastikan secret ANTHROPIC_API_KEY sudah diisi.',
-  503: 'Fungsi gagal start (503). Deploy ulang "recipe-ai" dengan isi file service/ai/recipe-ai.ts terbaru, lalu cek Logs.',
-  546: 'Fungsi kehabisan waktu/memori (546). Coba lagi dengan teks lebih pendek.',
-};
-
-/**
- * Panggil Supabase Edge Function. Melempar Error berisi pesan yang bisa
- * dipahami: pesan dari kode fungsi bila ada, kalau tidak penjelasan per status.
- */
-export async function invokeFunction(name, body) {
-  const c = await client();
-  const { data, error } = await c.functions.invoke(name, { body });
-  if (!error) return data;
-
-  const res = error.context; // Response dari server (bila ada)
-  const status = typeof res?.status === 'number' ? res.status : 0;
-  let detail = '';
-  try {
-    const text = await res.text();
-    try {
-      const j = JSON.parse(text);
-      detail = j.error || j.message || j.msg || '';
-    } catch {
-      detail = text.slice(0, 160);
-    }
-  } catch { /* tidak ada body */ }
-
-  // Pesan dari kode fungsi kita sendiri → tampilkan apa adanya
-  if (detail && res?.headers?.get?.('x-rumahku-fn')) throw new Error(detail);
-  if (!status) throw new Error('Tidak bisa menghubungi fungsi AI. Cek koneksi internet, atau fungsi belum di-deploy.');
-  const hint = FUNCTION_HINTS[status] || `Fungsi AI error (status ${status}).`;
-  throw new Error(detail && !hint.includes(detail) ? `${hint} [${detail}]` : hint);
-}
-
 /* ---------- Realtime ---------- */
 
 /**
