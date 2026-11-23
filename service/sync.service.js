@@ -11,6 +11,7 @@
  * Kalau Supabase belum dikonfigurasi, aplikasi tetap jalan dalam mode lokal.
  */
 import * as db from './database.service.js';
+import * as access from './access.service.js';
 import { setSyncHook, collection, save, load, clearAll, hasLocalData, removeLocal } from './storage.service.js';
 
 const QUEUE_KEY = 'rumahku-sync-queue';
@@ -141,6 +142,7 @@ export function pullAll() {
     if (readQueue().length) return false; // masih ada perubahan yang belum terkirim, jangan ditimpa
     emit({ status: 'syncing' });
     try {
+      await access.refresh(); // admin mungkin baru mengubah akses menu
       const remote = {};
       for (const key of Object.keys(db.TABLES)) remote[key] = await db.fetchTable(key);
       const settings = await db.fetchSettings();
@@ -201,6 +203,7 @@ export async function login(email, password) {
   const session = await db.signIn(email.trim(), password);
   localStorage.setItem(USER_KEY, session.user.email);
   emit({ user: { email: session.user.email }, error: null });
+  await access.refresh();
   await pullAll();
   startRealtime();
 }
@@ -213,6 +216,7 @@ export async function logout() {
   unsubscribeRealtime?.();
   unsubscribeRealtime = null;
   clearAll({ silent: true });
+  access.reset();
   writeQueue([]);
   localStorage.removeItem(USER_KEY);
   localStorage.removeItem(LAST_SYNC_KEY);
@@ -250,6 +254,7 @@ export async function initData({ onRemoteChange } = {}) {
   }
 
   if (state.user) {
+    await access.refresh();
     pullAll().then((ok) => ok && remoteChangeCallback());
     startRealtime();
   }

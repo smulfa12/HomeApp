@@ -10,11 +10,13 @@ import { createRouter } from './service/router.service.js';
 import { initData, needsLogin } from './service/sync.service.js';
 import { isUserBusy } from './service/ui.service.js';
 import { enableAutoUpdate } from './service/update.service.js';
+import { canPath, MENUS, can } from './service/access.service.js';
 
 // Login, beranda & pengaturan
 import login from './program/login.js';
 import home from './program/home.js';
 import settings from './program/settings.js';
+import configure from './program/configure.js';
 
 // Menu Utama Inventory Rumah
 import inventoryMenu from './program/inventory/inventory-menu.js';
@@ -49,7 +51,7 @@ import targetTabungan from './program/finance/target-tabungan.js';
 import kategori from './program/finance/kategori.js';
 
 const MODULES = [
-  login, home, settings,
+  login, home, settings, configure,
   kegiatan,
   resep, resepForm, resepDetail,
   inventoryMenu, inputBarang, stockKeluar, stockOpname, daftarBelanja, modeBelanja, riwayatBelanja, barangLokasi, lokasiAtur,
@@ -60,13 +62,22 @@ const MODULES = [
 function highlightNav(path) {
   document.body.classList.toggle('auth-page', path === '/login');
   const section = ['inventory', 'finance', 'kegiatan', 'resep', 'settings'].find((s) => path.startsWith('/' + s)) || 'home';
-  document.querySelectorAll('.tabbar a').forEach((a) => a.classList.toggle('on', a.dataset.tab === section));
+  document.querySelectorAll('.tabbar a').forEach((a) => {
+    a.classList.toggle('on', a.dataset.tab === section);
+    // sembunyikan tab menu yang tidak boleh diakses akun ini
+    const menu = MENUS.find((m) => m.key === a.dataset.tab);
+    a.classList.toggle('hidden', Boolean(menu) && !can(menu.key));
+  });
 }
 
 const router = createRouter({
   outlet: document.getElementById('app'),
   onNavigate: highlightNav,
-  guard: (path) => (needsLogin() ? '/login' : path === '/login' ? '/' : null),
+  guard: (path) => {
+    if (needsLogin()) return path === '/login' ? null : '/login';
+    if (path === '/login') return '/';
+    return canPath(path) ? null : '/'; // menu tanpa akses → kembali ke Home
+  },
 });
 MODULES.forEach((m) => router.register(m));
 

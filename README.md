@@ -140,13 +140,14 @@ Jalankan file yang belum pernah dijalankan, berurutan, di **SQL Editor** Supabas
 
 | File | Isi |
 |---|---|
-| `schema.sql` | skema awal (sudah termasuk semua migrasi; untuk project baru) |
+| `schema.sql` | skema awal (sudah termasuk migrasi 002–007; project baru: jalankan ini lalu `008`) |
 | `002_akun_uang.sql` | ikon, nomor rekening, catatan & arsip untuk dompet/rekening |
 | `003_transfer.sql` | transfer antar dompet / rekening (+ biaya admin) |
 | `004_target_tabungan.sql` | target tabungan (dikaitkan ke satu / beberapa rekening) |
 | `005_riwayat_belanja.sql` | riwayat belanja dari Mode Belanja |
 | `006_kegiatan.sql` | to-do list kegiatan harian |
 | `007_resep.sql` | resep, gizi, & tautan jadwal masak di Kegiatan |
+| `008_role_akses.sql` | role Admin / User & akses menu per akun (menu **Configure**) |
 
 Kalau aplikasi versi baru dipakai sebelum SQL-nya dijalankan, perubahan tetap aman tersimpan di HP
 (menu Atur menampilkan pesan "Database perlu diperbarui") dan otomatis terkirim setelah SQL dijalankan.
@@ -162,7 +163,17 @@ Kalau `supabase.config.js` dibiarkan kosong, aplikasi jalan dalam **mode lokal**
 | `fin_transactions` | pemasukan & pengeluaran |
 | `app_settings` | lokasi, budget, tanggal opname terakhir |
 
-Semua tabel dilindungi Row Level Security: hanya user yang login yang bisa membaca & menulis.
+| `app_users` | role (admin / user) & menu yang boleh dibuka tiap akun |
+
+Semua tabel dilindungi Row Level Security: hanya user yang login yang bisa membaca & menulis,
+dan (setelah `008`) hanya untuk menu yang boleh dibuka akun tersebut.
+
+### 🔐 Role Admin & User
+- Akun **pertama** yang dibuat di Supabase otomatis jadi **Admin**; akun baru otomatis **User**.
+- Admin: Settings → **Configure** → pilih role & centang menu (Inventory, Finance, Activities, Recipes) tiap akun.
+- Menu tanpa akses disembunyikan dari tab bar & Home, dan datanya ditolak oleh database (RLS).
+- Restore, Load Sample Data & Delete All Data hanya untuk Admin.
+- Tambah akun: Supabase → Authentication → Users → **Add user**.
 
 ## 🚀 Menjalankan
 

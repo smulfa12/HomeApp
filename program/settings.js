@@ -8,6 +8,7 @@ import { today } from '../service/format.service.js';
 import { syncState, onSyncChange, syncNow, logout } from '../service/sync.service.js';
 import { navigate } from '../service/router.service.js';
 import { APP_VERSION } from '../service/version.service.js';
+import { can, isAdmin, isManaged } from '../service/access.service.js';
 
 const STATUS = {
   synced: ['ok', '✅ Tersinkron'],
@@ -37,6 +38,7 @@ function dbCard(s) {
     <section class="card">
       <div class="card__head"><h2>🗄️ Database Supabase</h2><span class="badge badge--${cls}">${label}</span></div>
       <div class="kv"><span>Akun</span><strong>${esc(s.user?.email || '-')}</strong></div>
+      ${isManaged() ? `<div class="kv"><span>Role</span><strong>${isAdmin() ? '👑 Admin' : '🙂 User'}</strong></div>` : ''}
       <div class="kv"><span>Sinkron terakhir</span><strong>${timeLabel(s.lastSync)}</strong></div>
       <div class="kv"><span>Menunggu dikirim</span><strong>${s.pending} perubahan</strong></div>
       ${s.error && s.status === 'error' ? `<p class="small text-rose">${esc(s.error)}</p>` : ''}
@@ -52,18 +54,23 @@ export default {
   title: 'Settings',
   render(el) {
     const cloud = syncState().mode === 'cloud';
+    const admin = isAdmin();
+    const rows = [
+      admin && isManaged() && '<a class="setting-row" href="#/configure"><span>🔐</span><div><strong>Configure</strong><small>Role admin / user & menu yang boleh dibuka tiap akun</small></div></a>',
+      can('finance') && '<a class="setting-row" href="#/finance/akun?from=settings"><span>💳</span><div><strong>Accounts</strong><small>Tambah / atur tempat penyimpanan uang & hutang</small></div></a>',
+      can('inventory') && '<a class="setting-row" href="#/inventory/lokasi-atur?from=settings"><span>📍</span><div><strong>Inventory Locations</strong><small>Atur tempat penyimpanan barang</small></div></a>',
+      can('finance') && '<a class="setting-row" href="#/finance/kategori?from=settings"><span>🗂️</span><div><strong>Budget Categories</strong><small>Atur kategori pengeluaran & pemasukan sendiri</small></div></a>',
+      can('finance') && '<a class="setting-row" href="#/finance/transfer"><span>🔁</span><div><strong>Transfer</strong><small>Pindah saldo antar dompet / rekening, bayar hutang</small></div></a>',
+      '<button class="setting-row" data-export><span>💾</span><div><strong>Backup</strong><small>Unduh file cadangan (.json)</small></div></button>',
+      admin && `<label class="setting-row"><input type="file" accept="application/json" hidden data-import /><span>📂</span><div><strong>Restore</strong><small>Dari file backup${cloud ? ' (menggantikan data di database)' : ''}</small></div></label>`,
+      admin && '<button class="setting-row" data-demo><span>🧸</span><div><strong>Load Sample Data</strong><small>Untuk mencoba semua fitur</small></div></button>',
+      admin && `<button class="setting-row setting-row--danger" data-reset><span>🗑️</span><div><strong>Delete All Data</strong><small>${cloud ? 'Termasuk di database, untuk semua anggota keluarga' : 'Tidak bisa dibatalkan'}</small></div></button>`,
+    ].filter(Boolean);
     el.innerHTML = `
       ${pageHeader({ title: 'Settings', subtitle: cloud ? 'Data tersimpan di database Supabase' : 'Data tersimpan di HP ini', emoji: '⚙️', tone: 'sky' })}
       <div data-db>${dbCard(syncState())}</div>
       <section class="card settings">
-        <a class="setting-row" href="#/finance/akun?from=settings"><span>💳</span><div><strong>Accounts</strong><small>Tambah / atur tempat penyimpanan uang & hutang</small></div></a>
-        <a class="setting-row" href="#/inventory/lokasi-atur?from=settings"><span>📍</span><div><strong>Inventory Locations</strong><small>Atur tempat penyimpanan barang</small></div></a>
-        <a class="setting-row" href="#/finance/kategori?from=settings"><span>🗂️</span><div><strong>Budget Categories</strong><small>Atur kategori pengeluaran & pemasukan sendiri</small></div></a>
-        <a class="setting-row" href="#/finance/transfer"><span>🔁</span><div><strong>Transfer</strong><small>Pindah saldo antar dompet / rekening, bayar hutang</small></div></a>
-        <button class="setting-row" data-export><span>💾</span><div><strong>Backup</strong><small>Unduh file cadangan (.json)</small></div></button>
-        <label class="setting-row"><input type="file" accept="application/json" hidden data-import /><span>📂</span><div><strong>Restore</strong><small>Dari file backup${cloud ? ' (menggantikan data di database)' : ''}</small></div></label>
-        <button class="setting-row" data-demo><span>🧸</span><div><strong>Load Sample Data</strong><small>Untuk mencoba semua fitur</small></div></button>
-        <button class="setting-row setting-row--danger" data-reset><span>🗑️</span><div><strong>Delete All Data</strong><small>${cloud ? 'Termasuk di database, untuk semua anggota keluarga' : 'Tidak bisa dibatalkan'}</small></div></button>
+        ${rows.join('')}
       </section>
       <section class="card">
         <h2>📱 Install on Phone</h2>
@@ -110,7 +117,7 @@ export default {
       toast('💾 Backup diunduh');
     });
 
-    el.querySelector('[data-import]').addEventListener('change', async (e) => {
+    el.querySelector('[data-import]')?.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       try {
@@ -128,7 +135,7 @@ export default {
       }
     });
 
-    el.querySelector('[data-demo]').addEventListener('click', async () => {
+    el.querySelector('[data-demo]')?.addEventListener('click', async () => {
       const ok = await confirmTyped(`Data contoh akan MENGGANTIKAN semua data barang & keuangan${who}. Data asli kamu akan hilang.`, 'CONTOH', {
         okText: 'Isi Data Contoh',
         detail: AUTO_BACKUP,
@@ -140,7 +147,7 @@ export default {
       navigate('/');
     });
 
-    el.querySelector('[data-reset]').addEventListener('click', async () => {
+    el.querySelector('[data-reset]')?.addEventListener('click', async () => {
       const ok = await confirmTyped(`Semua data inventory & keuangan akan DIHAPUS PERMANEN${who}.`, 'HAPUS', {
         okText: 'Hapus Semua',
         detail: AUTO_BACKUP,
