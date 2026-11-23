@@ -177,7 +177,11 @@ tersimpan aman di server — tidak pernah ada di kode aplikasi (yang publik di G
 3. Supabase → **Edge Functions → Deploy a new function → Via Editor**, nama fungsi **`recipe-ai`**,
    paste isi `service/ai/recipe-ai.ts`, lalu **Deploy**.
 4. Di pengaturan fungsi `recipe-ai`, matikan **Verify JWT** (fungsi sudah memeriksa login sendiri).
-5. Buka aplikasi → Resep → **✨ Tambah dengan AI**.
+5. **Cek status:** buka `https://<project>.supabase.co/functions/v1/recipe-ai` di browser. Harus tampil
+   `"ok": true` dan `"anthropicKey": "terisi"`.
+6. Buka aplikasi → Recipes → **✨ Tambah dengan AI**. Bila gagal, aplikasi menampilkan penyebabnya
+   (404 = fungsi belum di-deploy / nama salah, 401 = Verify JWT masih aktif, 503 = gagal start → cek Logs,
+   secret belum diisi, saldo Anthropic habis, dll.).
 
 Tanpa langkah ini, menu Resep tetap bisa dipakai dengan menulis resep sendiri.
 
