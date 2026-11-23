@@ -1,50 +1,10 @@
 /**
  * Menu Utama Resep — daftar menu masak, rencana menu 7 hari (dari jadwal
- * masak di Kegiatan), dan tambah resep manual / dengan AI.
+ * masak di Kegiatan), dan tulis resep baru.
  */
-import { pageHeader, esc, openSheet, toast, emptyState } from '../../service/ui.service.js';
+import { pageHeader, esc, emptyState } from '../../service/ui.service.js';
 import { today } from '../../service/format.service.js';
 import * as rcp from '../../service/recipe.service.js';
-import { navigate } from '../../service/router.service.js';
-
-export const DRAFT_KEY = 'rumahku-recipe-draft';
-const DAY = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-
-/** Sheet "Tambah dengan AI": tempel resep / ketik nama masakan → draf resep. */
-export function openAiSheet() {
-  const sheet = openSheet({
-    title: '✨ Tambah Resep dengan AI',
-    body: `
-      <form class="form" data-ai autocomplete="off">
-        <p class="muted small">Tempel resep dari web / WhatsApp / catatan, <b>atau</b> cukup ketik nama masakan. AI akan merapikan bahan, langkah, dan memperkirakan gizinya. Kamu bisa cek & ubah dulu sebelum disimpan.</p>
-        <textarea class="input textarea" name="text" rows="8" maxlength="20000" required placeholder="cth. Sayur asem jakarta untuk 4 orang&#10;&#10;atau tempel resep lengkap di sini…"></textarea>
-        <p class="ai-status hidden" data-status role="status"></p>
-        <button class="btn btn--primary btn--block" type="submit" data-go>✨ Proses dengan AI</button>
-      </form>`,
-  });
-  const form = sheet.el.querySelector('[data-ai]');
-  const status = form.querySelector('[data-status]');
-  const go = form.querySelector('[data-go]');
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    go.disabled = true;
-    go.textContent = '⏳ AI sedang menyusun resep…';
-    status.className = 'ai-status';
-    status.textContent = 'Biasanya 10–40 detik. Jangan tutup halaman ini.';
-    try {
-      const draft = await rcp.aiDraft(form.text.value);
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-      sheet.close();
-      navigate('/resep/form?draft=1');
-    } catch (err) {
-      status.className = 'ai-status ai-status--error';
-      status.textContent = `⚠️ ${err.message}`;
-      go.disabled = false;
-      go.textContent = '✨ Coba lagi';
-    }
-  });
-  setTimeout(() => form.text.focus(), 300);
-}
 
 export default {
   path: '/resep',
@@ -57,10 +17,7 @@ export default {
     el.innerHTML = `
       ${pageHeader({ title: 'Recipes', subtitle: 'Menu masak, resep & gizi keluarga', emoji: '🍳', tone: 'peach', back: '#/' })}
 
-      <div class="row gap-sm">
-        <button class="btn btn--primary grow" data-ai>✨ Tambah dengan AI</button>
-        <a class="btn btn--soft grow" href="#/resep/form">✍️ Tulis sendiri</a>
-      </div>
+      <a class="btn btn--primary btn--block" href="#/resep/form">✍️ Tulis Resep Baru</a>
 
       <section class="card" data-plan></section>
 
@@ -108,7 +65,7 @@ export default {
             </a>`;
             })
             .join('')}</div>`
-        : `<div class="card">${emptyState('🍳', q || category || favorite ? 'Tidak ditemukan' : 'Belum ada resep', 'Tambah resep pertama: ketik nama masakan dan biarkan AI yang menyusun.')}</div>`;
+        : `<div class="card">${emptyState('🍳', q || category || favorite ? 'Tidak ditemukan' : 'Belum ada resep', 'Tulis resep pertama: bahan & langkah cukup diketik satu per baris.')}</div>`;
 
       el.querySelectorAll('[data-cat]').forEach((b) =>
         b.addEventListener('click', () => {
@@ -124,10 +81,6 @@ export default {
       });
     };
 
-    el.querySelector('[data-ai]').addEventListener('click', () => {
-      if (!rcp.aiAvailable()) return toast('Fitur AI butuh database Supabase — lihat README', 'warn');
-      openAiSheet();
-    });
     el.querySelector('[data-q]').addEventListener('input', (e) => {
       q = e.target.value;
       drawList();

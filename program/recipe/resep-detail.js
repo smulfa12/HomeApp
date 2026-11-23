@@ -34,7 +34,7 @@ export default {
       const mins = (r.prepMinutes || 0) + (r.cookMinutes || 0);
 
       el.innerHTML = `
-        ${pageHeader({ title: r.name, subtitle: `${r.category}${mins ? ` · ⏱️ ${mins} menit` : ''}${r.source === 'ai' ? ' · ✨ AI' : ''}`, emoji: r.emoji || '🍳', tone: 'peach', back: '#/resep' })}
+        ${pageHeader({ title: r.name, subtitle: `${r.category}${mins ? ` · ⏱️ ${mins} menit` : ''}`, emoji: r.emoji || '🍳', tone: 'peach', back: '#/resep' })}
 
         <div class="row gap-sm">
           <button class="btn btn--primary grow" data-schedule>📅 Jadwalkan masak</button>
@@ -82,7 +82,7 @@ export default {
                   .map((n) => `<tr><td>${n.label}</td><td>${number(Math.round(r.nutrition[n.key]))} ${n.unit}</td><td>${number(Math.round(r.nutrition[n.key] * portions))} ${n.unit}</td></tr>`)
                   .join('')}</tbody>
               </table>`
-            : `<p class="muted small">Belum ada data gizi. <a class="link" href="#/resep/form?id=${r.id}">Isi sendiri atau hitung dengan AI</a>.</p>`}
+            : `<p class="muted small">Belum ada data gizi. <a class="link" href="#/resep/form?id=${r.id}">Isi di form resep</a>.</p>`}
         </section>
 
         ${(r.tags || []).length || r.note ? `<section class="card">${(r.tags || []).length ? `<div class="chips chips--wrap">${r.tags.map((t) => `<span class="chip">#${esc(t)}</span>`).join('')}</div>` : ''}${r.note ? `<p class="small">💡 ${esc(r.note)}</p>` : ''}</section>` : ''}

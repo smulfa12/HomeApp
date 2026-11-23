@@ -4,7 +4,6 @@
  */
 import { collection } from './storage.service.js';
 import { today, toISODate } from './format.service.js';
-import * as db from './database.service.js';
 import * as inv from './inventory.service.js';
 import * as act from './activity.service.js';
 
@@ -188,30 +187,3 @@ export function mealPlan(days = 7, from = today()) {
 
 export const schedulesFor = (recipeId, days = 30) =>
   mealPlan(days).flatMap((d) => d.meals.filter((m) => m.recipeId === recipeId).map((m) => ({ ...m, date: d.date })));
-
-/* ---------- AI ---------- */
-
-export const aiAvailable = () => db.isConfigured();
-
-/**
- * Minta AI (Edge Function "recipe-ai") mengubah teks resep / nama masakan
- * menjadi resep terstruktur + perkiraan gizi. Mengembalikan draf (belum disimpan).
- */
-export async function aiDraft(text) {
-  if (!aiAvailable()) throw new Error('Fitur AI butuh database Supabase (lihat README)');
-  const { recipe } = await db.invokeFunction('recipe-ai', { text });
-  return {
-    name: recipe.name,
-    emoji: recipe.emoji,
-    category: recipe.category,
-    servings: recipe.servings,
-    prepMinutes: recipe.prep_minutes,
-    cookMinutes: recipe.cook_minutes,
-    ingredients: recipe.ingredients.map((i) => ({ name: i.name, qty: Number(i.qty) || 0, unit: i.unit === 'secukupnya' ? 'secukupnya' : i.unit, note: i.note })),
-    steps: recipe.steps,
-    nutrition: recipe.nutrition,
-    tags: recipe.tags,
-    note: recipe.notes,
-    source: 'ai',
-  };
-}
