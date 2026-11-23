@@ -2,7 +2,7 @@
  * Service Worker — supaya aplikasi bisa dibuka tanpa internet.
  * Naikkan VERSION setiap kali ada perubahan file agar cache diperbarui.
  */
-const VERSION = 'rumahku-v24';
+const VERSION = 'rumahku-v25';
 const CORE = [
   './',
   './index.html',
@@ -66,6 +66,9 @@ const CORE = [
   './program/finance/transfer.js',
   './program/finance/target-tabungan.js',
   './program/finance/kategori.js',
+  './program/finance/tren.js',
+  './program/shared/chart.js',
+  './service/trend.service.js',
 ];
 
 self.addEventListener('install', (e) => {

@@ -13,6 +13,7 @@ const MENUS = [
   { href: '#/finance/neraca', emoji: '⚖️', title: 'Balance Sheet & P&L', desc: 'Kesehatan keuangan', tone: 'lavender' },
   { href: '#/finance/budget', emoji: '🎯', title: 'Budget vs Actual', desc: 'Rencana vs aktual', tone: 'butter' },
   { href: '#/finance/laporan-pemasukan', emoji: '📈', title: 'Income Report', desc: 'Per periode', tone: 'sky' },
+  { href: '#/finance/tren', emoji: '📊', title: 'Trends', desc: 'Grafik pengeluaran & harga', tone: 'butter' },
   { href: '#/finance/laporan-pengeluaran', emoji: '📉', title: 'Expense Report', desc: 'Per periode', tone: 'rose' },
   { href: '#/finance/akun', emoji: '💳', title: 'Manage Accounts', desc: 'Tambah / atur tempat uang', tone: 'mint' },
 ];
