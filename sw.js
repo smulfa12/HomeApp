@@ -2,7 +2,7 @@
  * Service Worker — supaya aplikasi bisa dibuka tanpa internet.
  * Naikkan VERSION setiap kali ada perubahan file agar cache diperbarui.
  */
-const VERSION = 'rumahku-v26';
+const VERSION = 'rumahku-v27';
 const CORE = [
   './',
   './index.html',
@@ -39,6 +39,7 @@ const CORE = [
   './program/recipe/resep.js',
   './program/recipe/resep-form.js',
   './program/recipe/resep-detail.js',
+  './program/recipe/belanja-mingguan.js',
   './program/settings.js',
   './program/configure.js',
   './service/access.service.js',
@@ -67,6 +68,10 @@ const CORE = [
   './program/finance/target-tabungan.js',
   './program/finance/kategori.js',
   './program/finance/tren.js',
+  './program/finance/tagihan.js',
+  './service/bill.service.js',
+  './service/notification.service.js',
+  './service/theme.service.js',
   './program/shared/chart.js',
   './service/trend.service.js',
 ];
@@ -116,4 +121,17 @@ self.addEventListener('fetch', (e) => {
       )
     );
   }
+});
+
+// Notifikasi diketuk → buka / fokuskan aplikasi di halaman terkait
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const url = new URL(e.notification.data?.url || '#/', self.registration.scope).href;
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      const client = list.find((c) => c.url.startsWith(self.registration.scope));
+      if (client) return client.focus().then((c) => c.navigate(url));
+      return self.clients.openWindow(url);
+    })
+  );
 });

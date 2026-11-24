@@ -43,7 +43,8 @@ export default {
                     ? meals.map((mm) => `<a href="#/resep/detail?id=${mm.recipeId}">${esc(mm.recipe.emoji)} ${esc(mm.recipe.name)}${mm.time ? ` <small>${mm.time}</small>` : ''}${mm.done ? ' ✅' : ''}</a>`).join('')
                     : '<span class="muted small">—</span>'}</div></li>`;
               })
-              .join('')}</ul>`
+              .join('')}</ul>
+             ${can('inventory') ? '<a class="btn btn--soft btn--block" href="#/resep/belanja">🛒 Belanja untuk menu ini</a>' : ''}`
           : `<p class="muted small">Belum ada jadwal masak. Buka resep → <b>📅 Jadwalkan masak</b>, nanti muncul di sini dan di Activities.</p>`}`;
     };
 

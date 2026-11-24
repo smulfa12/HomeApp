@@ -9,6 +9,8 @@ import { syncState, onSyncChange, syncNow, logout } from '../service/sync.servic
 import { navigate } from '../service/router.service.js';
 import { APP_VERSION } from '../service/version.service.js';
 import { can, isAdmin, isManaged } from '../service/access.service.js';
+import * as notif from '../service/notification.service.js';
+import * as theme from '../service/theme.service.js';
 
 const STATUS = {
   synced: ['ok', '✅ Tersinkron'],
@@ -71,6 +73,14 @@ export default {
       <div data-db>${dbCard(syncState())}</div>
       <section class="card settings">
         ${rows.join('')}
+      </section>
+      <section class="card" data-notif></section>
+      <section class="card">
+        <h2>🎨 Appearance</h2>
+        <div class="segmented" role="radiogroup" aria-label="Tema">
+          ${theme.MODES.map(([k, l]) => `<button type="button" data-theme-mode="${k}" class="${theme.getMode() === k ? 'on' : ''}">${l}</button>`).join('')}
+        </div>
+        <p class="muted small">Auto mengikuti pengaturan gelap/terang HP.</p>
       </section>
       <section class="card">
         <h2>📱 Install on Phone</h2>
@@ -158,6 +168,58 @@ export default {
       toast('Semua data dihapus');
       navigate('/');
     });
+
+    /* ---------- Tema ---------- */
+    el.querySelectorAll('[data-theme-mode]').forEach((b) =>
+      b.addEventListener('click', () => {
+        theme.setMode(b.dataset.themeMode);
+        el.querySelectorAll('[data-theme-mode]').forEach((x) => x.classList.toggle('on', x === b));
+      })
+    );
+
+    /* ---------- Notifikasi ---------- */
+    const notifBox = el.querySelector('[data-notif]');
+    const drawNotif = () => {
+      const s = notif.getSettings();
+      const perm = notif.permission();
+      const on = s.enabled && perm === 'granted';
+      const types = notif.TYPES.filter((t) => can(t.menu));
+      notifBox.innerHTML = `
+        <div class="card__head"><h2>🔔 Notifications</h2>
+          ${perm === 'unsupported' ? '<span class="badge badge--info">tidak didukung</span>' : `<label class="toggle"><input type="checkbox" data-notif-on ${on ? 'checked' : ''} /><span></span></label>`}
+        </div>
+        ${perm === 'unsupported'
+          ? '<p class="small muted">Browser ini belum mendukung notifikasi. Di iPhone: pasang aplikasi ke layar utama dulu (iOS 16.4+).</p>'
+          : perm === 'denied'
+            ? '<p class="small text-danger">Izin notifikasi diblokir. Buka pengaturan situs di browser → Notifikasi → Izinkan.</p>'
+            : ''}
+        ${on ? `
+          <div class="notif-types">${types.map((t) => `<label class="switch-row"><input type="checkbox" data-notif-type="${t.key}" ${s.types[t.key] !== false ? 'checked' : ''} /> <span>${t.icon} ${t.label}</span></label>`).join('')}</div>
+          <button class="btn btn--soft btn--block" data-notif-test>🔔 Kirim notifikasi uji</button>` : ''}
+        <p class="small muted">Pengingat muncul selama aplikasi terbuka atau berjalan di latar belakang. Bila aplikasi ditutup penuh, pengingat dikirim saat aplikasi dibuka lagi. Pengaturan ini khusus HP ini.</p>`;
+
+      notifBox.querySelector('[data-notif-on]')?.addEventListener('change', async (e) => {
+        try {
+          if (e.target.checked) {
+            await notif.enable();
+            toast('🔔 Notifikasi aktif');
+          } else notif.disable();
+        } catch (err) {
+          toast(err.message, 'error');
+        }
+        drawNotif();
+      });
+      notifBox.querySelectorAll('[data-notif-type]').forEach((c) =>
+        c.addEventListener('change', () => {
+          const cur = notif.getSettings();
+          notif.saveSettings({ ...cur, types: { ...cur.types, [c.dataset.notifType]: c.checked } });
+        })
+      );
+      notifBox.querySelector('[data-notif-test]')?.addEventListener('click', () =>
+        notif.show('🏡 Rumahku', 'Notifikasi berhasil! Pengingat akan muncul seperti ini.', { tag: 'test' }).then(() => toast('Terkirim — cek bilah notifikasi HP'))
+      );
+    };
+    drawNotif();
 
     return stop;
   },

@@ -42,6 +42,7 @@ export const currentAccess = () => ({ ...access });
 /** Boleh membuka halaman ini? /configure hanya admin. */
 export function canPath(path) {
   if (path.startsWith('/configure')) return isAdmin() && isManaged();
+  if (path === '/resep/belanja' && !can('inventory')) return false; // butuh stok Inventory
   const menu = MENUS.find((m) => path === m.path || path.startsWith(m.path + '/'));
   if (!menu) return true;
   // pengaturan dompet/kategori/lokasi dari Settings tetap butuh akses menunya

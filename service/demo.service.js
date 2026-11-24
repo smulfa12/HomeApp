@@ -2,8 +2,9 @@
  * Demo Service
  * Mengisi data contoh supaya aplikasi bisa langsung dicoba.
  */
-import { collection, save, uid } from './storage.service.js';
+import { collection, uid } from './storage.service.js';
 import { toISODate, thisMonth, addMonths } from './format.service.js';
+import { replaceBudgets } from './finance.service.js';
 
 const shift = (days) => {
   const d = new Date();
@@ -73,7 +74,7 @@ export function loadDemoData() {
     'Belanja Dapur': 2000000, 'Cicilan & Hutang': 3200000, 'Listrik & Air': 700000, 'Internet & Pulsa': 400000,
     Transportasi: 600000, 'Makan di Luar': 400000, Pendidikan: 1200000, Kesehatan: 300000, Hiburan: 300000,
   };
-  save('fin.budgets', { [m0]: plan, [m1]: plan });
+  replaceBudgets({ [m0]: plan, [m1]: plan });
 
   // Resep contoh
   const ing = (name, qty, unit, note = '') => ({ name, qty, unit, note });

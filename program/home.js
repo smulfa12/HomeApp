@@ -10,6 +10,8 @@ import * as act from '../service/activity.service.js';
 import { today } from '../service/format.service.js';
 import { todoRow } from './shared/todo-row.js';
 import { can, isAdmin } from '../service/access.service.js';
+import * as bill from '../service/bill.service.js';
+import { billRow, openPaySheet } from './finance/tagihan.js';
 
 function greeting() {
   const h = new Date().getHours();
@@ -65,6 +67,15 @@ export default {
           : `<p class="muted small">Belum ada kegiatan. <a class="link" href="#/kegiatan">Buat jadwal harian</a></p>`}
       </section>`;
 
+    // Tagihan yang jatuh tempo ≤ 7 hari lagi / terlambat
+    const dueBills = can('finance') ? bill.dueSoon(7) : [];
+    const billsHtml = dueBills.length
+      ? `<section class="card">
+          <div class="card__head"><h2>📅 Bills Due</h2><a class="link" href="#/finance/tagihan">Semua ›</a></div>
+          <ul class="bill-list">${dueBills.slice(0, 4).map((x) => billRow(x)).join('')}</ul>
+        </section>`
+      : '';
+
     const quick = [
       ...(can('inventory') ? ['<a class="quick tone-mint" href="#/inventory/input"><span>📥</span>Stock In</a>', '<a class="quick tone-peach" href="#/inventory/keluar"><span>📤</span>Stock Out</a>'] : []),
       ...(can('finance') ? ['<a class="quick tone-sky" href="#/finance/expense"><span>🧾</span>Scan Receipt</a>', '<a class="quick tone-butter" href="#/finance/income"><span>💰</span>Income</a>'] : []),
@@ -87,6 +98,8 @@ export default {
       </div>` : ''}
 
       ${todoHtml}
+
+      ${billsHtml}
 
       ${can('inventory') ? `<a class="big-card tone-mint" href="#/inventory">
         <div class="big-card__top">
@@ -127,6 +140,10 @@ export default {
           ${low.map((i) => `<li><span>${inv.categoryInfo(i.category).emoji} ${esc(i.name)}</span><span class="badge badge--warn">sisa ${i.qty}</span></li>`).join('')}
         </ul>
       </section>` : ''}`;
+
+    el.querySelectorAll('[data-pay]').forEach((b) =>
+      b.addEventListener('click', () => openPaySheet(b.dataset.pay, b.dataset.month, () => window.dispatchEvent(new HashChangeEvent('hashchange'))))
+    );
 
     el.querySelectorAll('[data-toggle]').forEach((b) =>
       b.addEventListener('click', () => {

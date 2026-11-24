@@ -3,7 +3,7 @@
  * Logika keuangan keluarga: akun (aset & hutang), transaksi pemasukan /
  * pengeluaran, laporan per periode, neraca, laba-rugi, dan budget.
  */
-import { collection, load, save } from './storage.service.js';
+import { collection, load, migrateOnce } from './storage.service.js';
 import { today, toISODate } from './format.service.js';
 
 const accounts = collection('fin.accounts');
@@ -48,17 +48,53 @@ export const CATEGORY_EMOJIS = [
   '📈', '💝', '✨', '🪙',
 ];
 
+// Satu baris per kategori di koleksi 'fin.categoryRows' (tabel fin_categories).
+// Data lama ('fin.categories.income/expense' di pengaturan) dipindah otomatis sekali.
+const catRows = collection('fin.categoryRows');
+const CAT_MIGRATED = 'app.migrated.categories';
 const catKey = (type) => `fin.categories.${type}`;
+const catId = (type, name) => `cat:${type}:${String(name).trim().toLowerCase()}`;
 const findCat = (list, name) => list.find((c) => c.name.toLowerCase() === String(name).trim().toLowerCase());
 export const isSystemCategory = (type, name) => SYSTEM_CATEGORIES[type].includes(name);
 
+const rowsOfType = (type) => catRows.filter((r) => r.type === type).sort((a, b) => a.sort - b.sort);
+const legacyCategories = (type) => load(catKey(type), DEFAULT_CATEGORIES[type]);
+
 /** Daftar kategori pemasukan / pengeluaran sesuai urutan yang diatur user. */
 export function getCategories(type, { includeHidden = false } = {}) {
-  const list = load(catKey(type), DEFAULT_CATEGORIES[type]);
+  const rows = rowsOfType(type);
+  const list = rows.length || load(CAT_MIGRATED, false)
+    ? rows.map(({ id, name, emoji, hidden }) => ({ id, name, emoji, ...(hidden ? { hidden: true } : {}) }))
+    : legacyCategories(type).map((c) => ({ ...c }));
   return includeHidden ? list : list.filter((c) => !c.hidden);
 }
 
-const writeCategories = (type, list) => save(catKey(type), list.map(({ name, emoji, hidden }) => ({ name, emoji, ...(hidden ? { hidden: true } : {}) })));
+function ensureCategoryRows() {
+  migrateOnce(CAT_MIGRATED, () =>
+    ['income', 'expense'].forEach((type) => {
+      if (rowsOfType(type).length) return;
+      legacyCategories(type).forEach((c, sort) => catRows.add({ id: catId(type, c.name), type, name: c.name, emoji: c.emoji, hidden: Boolean(c.hidden), sort }));
+    })
+  );
+}
+
+/** Simpan daftar kategori: hanya baris yang berubah yang dikirim ke database. */
+function writeCategories(type, list) {
+  ensureCategoryRows();
+  const keep = new Set();
+  const taken = new Set(list.map((c) => c.id).filter(Boolean));
+  list.forEach((c, sort) => {
+    // id dari nama; kalau sudah dipakai kategori lain (yang namanya diganti) → beri akhiran
+    let id = c.id || catId(type, c.name);
+    if (!c.id && taken.has(id)) id = `${id}-${Date.now().toString(36)}`;
+    keep.add(id);
+    const row = catRows.get(id);
+    const next = { type, name: c.name, emoji: c.emoji, hidden: Boolean(c.hidden), sort };
+    if (!row) catRows.add({ id, ...next });
+    else if (Object.entries(next).some(([k, v]) => row[k] !== v)) catRows.update(id, next);
+  });
+  rowsOfType(type).filter((r) => !keep.has(r.id)).forEach((r) => catRows.remove(r.id));
+}
 
 export function categoryEmoji(type, name) {
   return (findCat(getCategories(type, { includeHidden: true }), name) || { emoji: type === 'income' ? '✨' : '🧾' }).emoji;
@@ -89,18 +125,7 @@ export function updateCategory(type, oldName, { name, emoji }) {
     if (isSystemCategory(type, cat.name)) throw new Error(`"${cat.name}" dipakai sistem, namanya tidak bisa diganti`);
     if (findCat(list.filter((c) => c !== cat), newName)) throw new Error(`Kategori "${newName}" sudah ada`);
     transactions.filter((t) => t.type === type && t.category === cat.name).forEach((t) => transactions.update(t.id, { category: newName }));
-    if (type === 'expense') {
-      const all = load('fin.budgets', {});
-      let changed = false;
-      Object.values(all).forEach((month) => {
-        if (cat.name in month) {
-          month[newName] = (month[newName] || 0) + month[cat.name];
-          delete month[cat.name];
-          changed = true;
-        }
-      });
-      if (changed) save('fin.budgets', all);
-    }
+    if (type === 'expense') renameBudgetCategory(cat.name, newName);
     cat.name = newName;
   }
   if (emoji) cat.emoji = emoji;
@@ -125,17 +150,7 @@ export function deleteCategory(type, name) {
   const list = getCategories(type, { includeHidden: true }).filter((c) => c.name !== name);
   if (!list.filter((c) => !c.hidden).length) throw new Error('Minimal harus ada 1 kategori aktif');
   writeCategories(type, list);
-  if (type === 'expense') {
-    const all = load('fin.budgets', {});
-    let changed = false;
-    Object.values(all).forEach((month) => {
-      if (name in month) {
-        delete month[name];
-        changed = true;
-      }
-    });
-    if (changed) save('fin.budgets', all);
-  }
+  if (type === 'expense') removeBudgetCategory(name);
 }
 
 /** Geser urutan kategori (dir -1 = naik, 1 = turun), melompati kategori yang disembunyikan. */
@@ -150,7 +165,7 @@ export function moveCategory(type, name, dir) {
   writeCategories(type, list);
 }
 
-export const resetCategories = (type) => writeCategories(type, DEFAULT_CATEGORIES[type]);
+export const resetCategories = (type) => writeCategories(type, DEFAULT_CATEGORIES[type].map((c) => ({ ...c, id: catId(type, c.name) })));
 
 /* ---------- Akun / tempat penyimpanan uang ---------- */
 
@@ -558,22 +573,67 @@ export function balanceSheet(asOf = today()) {
 
 /* ---------- Budget ---------- */
 
-const budgetStore = () => load('fin.budgets', {});
+// Satu baris per (bulan, kategori) di koleksi 'fin.budgetRows' (tabel fin_budgets).
+// Data lama ('fin.budgets' di pengaturan) dipindah otomatis sekali.
+const budRows = collection('fin.budgetRows');
+const BUD_MIGRATED = 'app.migrated.budgets';
+const budId = (month, category) => `bud:${month}:${String(category).trim().toLowerCase()}`;
+
+function budgetStore() {
+  if (!budRows.all().length && !load(BUD_MIGRATED, false)) return load('fin.budgets', {});
+  const all = {};
+  budRows.all().forEach((r) => ((all[r.month] ||= {})[r.category] = r.amount));
+  return all;
+}
+
+function ensureBudgetRows() {
+  migrateOnce(BUD_MIGRATED, () => {
+    if (budRows.all().length) return;
+    Object.entries(load('fin.budgets', {})).forEach(([month, cats]) =>
+      Object.entries(cats || {}).forEach(([category, amount]) => Number(amount) > 0 && budRows.add({ id: budId(month, category), month, category, amount: Number(amount) }))
+    );
+  });
+}
+
+const budRow = (month, category) => budRows.find((r) => r.month === month && r.category === category);
 
 export const getBudget = (month) => budgetStore()[month] || {};
 
 export function setBudget(month, category, amount) {
-  const all = budgetStore();
-  all[month] = { ...(all[month] || {}) };
-  if (Number(amount) > 0) all[month][category] = Number(amount);
-  else delete all[month][category];
-  save('fin.budgets', all);
+  ensureBudgetRows();
+  const row = budRow(month, category);
+  const n = Number(amount);
+  if (n > 0) row ? row.amount !== n && budRows.update(row.id, { amount: n }) : budRows.add({ id: budId(month, category), month, category, amount: n });
+  else if (row) budRows.remove(row.id);
 }
 
 export function copyBudget(fromMonth, toMonth) {
-  const all = budgetStore();
-  all[toMonth] = { ...(all[fromMonth] || {}) };
-  save('fin.budgets', all);
+  ensureBudgetRows();
+  const from = getBudget(fromMonth);
+  budRows.filter((r) => r.month === toMonth && !(r.category in from)).forEach((r) => budRows.remove(r.id));
+  Object.entries(from).forEach(([category, amount]) => setBudget(toMonth, category, amount));
+}
+
+/** Ganti seluruh budget (dipakai data contoh). map: { 'YYYY-MM': { kategori: jumlah } } */
+export function replaceBudgets(map) {
+  ensureBudgetRows();
+  budRows.all().forEach((r) => budRows.remove(r.id));
+  Object.entries(map).forEach(([month, cats]) => Object.entries(cats).forEach(([category, amount]) => setBudget(month, category, amount)));
+}
+
+/** Kategori diganti nama → budget ikut pindah (dijumlahkan bila nama baru sudah punya budget). */
+function renameBudgetCategory(oldName, newName) {
+  ensureBudgetRows();
+  budRows.filter((r) => r.category === oldName).forEach((r) => {
+    const target = budRow(r.month, newName);
+    budRows.remove(r.id);
+    setBudget(r.month, newName, (target?.amount || 0) + r.amount);
+  });
+}
+
+function removeBudgetCategory(name) {
+  ensureBudgetRows();
+  budRows.filter((r) => r.category === name).forEach((r) => budRows.remove(r.id));
 }
 
 /** Budget vs realisasi untuk bulan "YYYY-MM". */

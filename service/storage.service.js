@@ -100,7 +100,7 @@ export function exportAll() {
   return { app: 'HomeApp', version: 1, exportedAt: new Date().toISOString(), data };
 }
 
-const RESTORE_ORDER = ['inv.items', 'fin.accounts', 'rcp.recipes', 'fin.transactions', 'inv.movements', 'inv.shopping', 'act.todos', 'fin.goals'];
+const RESTORE_ORDER = ['inv.locationRows', 'inv.items', 'fin.accounts', 'fin.categoryRows', 'fin.budgetRows', 'fin.bills', 'rcp.recipes', 'fin.transactions', 'inv.movements', 'inv.shopping', 'act.todos', 'fin.goals'];
 
 export function importAll(payload) {
   if (!payload || typeof payload.data !== 'object') throw new Error('Format backup tidak dikenali');
@@ -130,4 +130,16 @@ export function removeLocal(key) {
 /** Apakah ada data lokal (untuk migrasi pertama kali ke database). */
 export function hasLocalData() {
   return Object.keys(localStorage).some((k) => k.startsWith(PREFIX));
+}
+
+/**
+ * Pindahkan data lama (satu paket pengaturan) ke koleksi baris — sekali saja.
+ * `seed()` menambah baris dari data lama bila koleksinya masih kosong.
+ * Penanda `marker` ikut tersinkron supaya HP lain tidak mengulanginya
+ * (dan data yang sengaja dihapus semua tidak muncul lagi dari data lama).
+ */
+export function migrateOnce(marker, seed) {
+  if (load(marker, false)) return;
+  seed();
+  save(marker, true);
 }

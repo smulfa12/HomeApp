@@ -4,6 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#F6F4EF" />
+    <script>
+      // Pasang tema sebelum halaman tampil (hindari kedip putih di mode gelap)
+      (function () {
+        try {
+          var m = localStorage.getItem('rumahku-theme') || 'auto';
+          var dark = m === 'dark' || (m === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        } catch (e) {}
+      })();
+    </script>
     <meta name="color-scheme" content="light" />
     <meta name="description" content="Rumahku — inventory barang & keuangan keluarga dalam satu aplikasi." />
     <meta name="apple-mobile-web-app-capable" content="yes" />
