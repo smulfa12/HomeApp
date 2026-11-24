@@ -8,7 +8,11 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.config.js';
 const SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/+esm';
 const PAGE = 1000;
 
-/** Pemetaan "koleksi" lokal → tabel database beserta kolomnya (nama JS). */
+/**
+ * Pemetaan "koleksi" lokal → tabel database beserta kolomnya (nama JS).
+ * Urutan penting: tabel INDUK sebelum tabel yang mereferensikannya (relasi / foreign key,
+ * lihat database/009_relasi.sql) — dipakai saat restore & migrasi data pertama.
+ */
 export const TABLES = {
   'inv.items': {
     table: 'inv_items',
@@ -30,13 +34,13 @@ export const TABLES = {
     table: 'inv_shopping',
     columns: ['id', 'date', 'store', 'total', 'accountId', 'transactionId', 'items', 'note', 'createdAt', 'updatedAt'],
   },
-  'act.todos': {
-    table: 'act_todos',
-    columns: ['id', 'title', 'icon', 'time', 'endTime', 'date', 'repeat', 'days', 'who', 'note', 'recipeId', 'doneDates', 'skipDates', 'createdAt', 'updatedAt'],
-  },
   'rcp.recipes': {
     table: 'rcp_recipes',
     columns: ['id', 'name', 'emoji', 'category', 'servings', 'prepMinutes', 'cookMinutes', 'ingredients', 'steps', 'nutrition', 'tags', 'note', 'source', 'favorite', 'createdAt', 'updatedAt'],
+  },
+  'act.todos': {
+    table: 'act_todos',
+    columns: ['id', 'title', 'icon', 'time', 'endTime', 'date', 'repeat', 'days', 'who', 'note', 'recipeId', 'doneDates', 'skipDates', 'createdAt', 'updatedAt'],
   },
   'fin.goals': {
     table: 'fin_goals',
@@ -143,9 +147,32 @@ export async function fetchSettings() {
 
 /* ---------- Tulis ---------- */
 
+/** Error foreign key: "Key (account_id)=(abc) is not present in table ..." → { col, value } */
+function missingRef(err) {
+  if (String(err?.code) !== '23503') return null;
+  const m = /Key \(([a-z_]+)\)=\((.*?)\) is not present/.exec(`${err.details || ''} ${err.message || ''}`);
+  return m ? { col: m[1], value: m[2] } : null;
+}
+
+/**
+ * Simpan baris. Kalau ada tautan ke data yang sudah dihapus (mis. akun dihapus di HP lain),
+ * tautan itu dikosongkan lalu disimpan ulang — datanya tidak hilang.
+ */
+async function writeRows(c, table, rows) {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const { error } = await c.from(table).upsert(rows);
+    if (!error) return;
+    const miss = missingRef(error);
+    if (!miss) throw error;
+    console.warn(`Tautan ${table}.${miss.col}=${miss.value} sudah tidak ada, dikosongkan`);
+    rows = rows.map((r) => (r[miss.col] === miss.value ? { ...r, [miss.col]: null } : r));
+  }
+  throw new Error(`Gagal menyimpan ${table}: tautan data tidak valid`);
+}
+
 export async function upsertRow(key, row) {
   const c = await client();
-  must(await c.from(TABLES[key].table).upsert(toRow(key, row)));
+  await writeRows(c, TABLES[key].table, [toRow(key, row)]);
 }
 
 export async function deleteRow(key, id) {
@@ -157,8 +184,10 @@ export async function replaceTable(key, rows) {
   const c = await client();
   const table = TABLES[key].table;
   must(await c.from(table).delete().not('id', 'is', null));
-  for (let i = 0; i < rows.length; i += 500) {
-    must(await c.from(table).upsert(rows.slice(i, i + 500).map((r) => toRow(key, r))));
+  // transfer (induk) sebelum biaya adminnya (ref_id → transaksi lain di tabel yang sama)
+  const ordered = key === 'fin.transactions' ? [...rows].sort((a, b) => Number(Boolean(a.refId)) - Number(Boolean(b.refId))) : rows;
+  for (let i = 0; i < ordered.length; i += 500) {
+    await writeRows(c, table, ordered.slice(i, i + 500).map((r) => toRow(key, r)));
   }
 }
 

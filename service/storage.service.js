@@ -100,10 +100,19 @@ export function exportAll() {
   return { app: 'HomeApp', version: 1, exportedAt: new Date().toISOString(), data };
 }
 
+const RESTORE_ORDER = ['inv.items', 'fin.accounts', 'rcp.recipes', 'fin.transactions', 'inv.movements', 'inv.shopping', 'act.todos', 'fin.goals'];
+
 export function importAll(payload) {
   if (!payload || typeof payload.data !== 'object') throw new Error('Format backup tidak dikenali');
   clearAll();
-  Object.entries(payload.data).forEach(([k, v]) => save(k, v));
+  // data induk dulu (barang, akun, resep, transaksi) supaya relasi di database tidak putus
+  const rank = (k) => {
+    const i = RESTORE_ORDER.indexOf(k);
+    return i < 0 ? RESTORE_ORDER.length : i;
+  };
+  Object.entries(payload.data)
+    .sort(([a], [b]) => rank(a) - rank(b))
+    .forEach(([k, v]) => save(k, v));
 }
 
 export function clearAll({ silent = false } = {}) {
