@@ -4,9 +4,6 @@ Aplikasi web (PWA) untuk HP: kelola **stok barang rumah** dan **keuangan keluarg
 Desain pastel kalem dan lucu, tiap menu punya warna sendiri supaya mudah dibedakan.
 Bisa dipasang ke layar utama HP dan tetap jalan tanpa internet (kecuali scan nota pertama kali).
 
-> 📊 **Aplikasi kedua di repo ini: [Project Manager](projectmanager/README.md)** — dashboard workload, inquiry & list
-> project, activity member (Gantt & Kanban), monitoring client, reminder email. Folder `projectmanager/`.
-
 ## ✨ Fitur
 
 > Nama menu di aplikasi memakai bahasa Inggris (Home, Inventory, Finance, Activities, Recipes, Settings); isi & keterangan tetap bahasa Indonesia.
