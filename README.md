@@ -140,7 +140,7 @@ Jalankan file yang belum pernah dijalankan, berurutan, di **SQL Editor** Supabas
 
 | File | Isi |
 |---|---|
-| `schema.sql` | skema awal (sudah termasuk migrasi 002–007; project baru: jalankan ini lalu `008` & `009`) |
+| `schema.sql` | skema awal (sudah termasuk migrasi 002–007; project baru: jalankan ini lalu `008`, `009` & `010`) |
 | `002_akun_uang.sql` | ikon, nomor rekening, catatan & arsip untuk dompet/rekening |
 | `003_transfer.sql` | transfer antar dompet / rekening (+ biaya admin) |
 | `004_target_tabungan.sql` | target tabungan (dikaitkan ke satu / beberapa rekening) |
@@ -149,6 +149,7 @@ Jalankan file yang belum pernah dijalankan, berurutan, di **SQL Editor** Supabas
 | `007_resep.sql` | resep, gizi, & tautan jadwal masak di Kegiatan |
 | `008_role_akses.sql` | role Admin / User & akses menu per akun (menu **Configure**) |
 | `009_relasi.sql` | relasi antar tabel (foreign key) |
+| `010_tabel_master_tagihan.sql` | lokasi, kategori & budget jadi tabel sendiri; tagihan rutin (Bills) |
 
 Kalau aplikasi versi baru dipakai sebelum SQL-nya dijalankan, perubahan tetap aman tersimpan di HP
 (menu Atur menampilkan pesan "Database perlu diperbarui") dan otomatis terkirim setelah SQL dijalankan.
@@ -165,6 +166,10 @@ Kalau `supabase.config.js` dibiarkan kosong, aplikasi jalan dalam **mode lokal**
 | `app_settings` | lokasi, budget, tanggal opname terakhir |
 
 | `app_users` | role (admin / user) & menu yang boleh dibuka tiap akun |
+| `inv_locations` | lokasi penyimpanan barang (+ ikon & urutan) |
+| `fin_categories` | kategori pemasukan / pengeluaran |
+| `fin_budgets` | budget per bulan per kategori |
+| `fin_bills` | tagihan rutin & catatan pembayarannya |
 
 ### 🔗 Relasi antar tabel (`009_relasi.sql`)
 ```
@@ -173,12 +178,13 @@ fin_accounts ──< fin_transactions      (account_id, to_account_id)
 fin_transactions ──< fin_transactions  (ref_id: biaya admin → transfernya)
 fin_accounts ──< inv_shopping >── fin_transactions   (account_id, transaction_id)
 rcp_recipes ──< act_todos              (recipe_id: jadwal masak)
+fin_accounts ──< fin_bills             (account_id: biasa dibayar dari)
 fin_accounts ──< fin_goals             (account_ids[], dijaga trigger)
 auth.users ──< semua tabel (created_by) · auth.users ──1 app_users
 ```
 Data induk yang dihapus **tidak** ikut menghapus riwayatnya: tautannya dikosongkan
 (kecuali biaya admin transfer, yang ikut terhapus bersama transfernya).
-Kategori & lokasi disimpan di `app_settings` (bukan tabel), jadi tidak punya relasi.
+Sejak `010`, lokasi, kategori & budget disimpan satu baris per data, jadi dua HP yang mengubah bersamaan tidak saling menimpa.
 
 Semua tabel dilindungi Row Level Security: hanya user yang login yang bisa membaca & menulis,
 dan (setelah `008`) hanya untuk menu yang boleh dibuka akun tersebut.

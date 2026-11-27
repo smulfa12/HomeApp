@@ -8,12 +8,13 @@ import * as fin from '../../service/finance.service.js';
 const MENUS = [
   { href: '#/finance/income', emoji: '💰', title: 'Income', desc: 'Catat pemasukan', tone: 'mint' },
   { href: '#/finance/expense', emoji: '🧾', title: 'Expense', desc: 'Scan nota / manual', tone: 'peach' },
+  { href: '#/finance/tagihan', emoji: '📅', title: 'Bills', desc: 'Tagihan rutin & jatuh tempo', tone: 'butter' },
   { href: '#/finance/transfer', emoji: '🔁', title: 'Transfer', desc: 'Antar dompet & rekening', tone: 'sky' },
   { href: '#/finance/target', emoji: '🐷', title: 'Savings Goals', desc: 'Dana darurat & impian', tone: 'rose' },
   { href: '#/finance/neraca', emoji: '⚖️', title: 'Balance Sheet & P&L', desc: 'Kesehatan keuangan', tone: 'lavender' },
   { href: '#/finance/budget', emoji: '🎯', title: 'Budget vs Actual', desc: 'Rencana vs aktual', tone: 'butter' },
   { href: '#/finance/laporan-pemasukan', emoji: '📈', title: 'Income Report', desc: 'Per periode', tone: 'sky' },
-  { href: '#/finance/tren', emoji: '📊', title: 'Trends', desc: 'Grafik pengeluaran & harga', tone: 'butter' },
+  { href: '#/finance/tren', emoji: '📊', title: 'Trends', desc: 'Grafik pengeluaran & harga', tone: 'sky' },
   { href: '#/finance/laporan-pengeluaran', emoji: '📉', title: 'Expense Report', desc: 'Per periode', tone: 'rose' },
   { href: '#/finance/akun', emoji: '💳', title: 'Manage Accounts', desc: 'Tambah / atur tempat uang', tone: 'mint' },
 ];

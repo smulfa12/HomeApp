@@ -14,6 +14,10 @@ const PAGE = 1000;
  * lihat database/009_relasi.sql) — dipakai saat restore & migrasi data pertama.
  */
 export const TABLES = {
+  'inv.locationRows': {
+    table: 'inv_locations',
+    columns: ['id', 'name', 'icon', 'sort', 'createdAt', 'updatedAt'],
+  },
   'inv.items': {
     table: 'inv_items',
     columns: ['id', 'name', 'barcode', 'qty', 'unit', 'category', 'minStock', 'location', 'expiry', 'price', 'createdAt', 'updatedAt'],
@@ -25,6 +29,18 @@ export const TABLES = {
   'fin.accounts': {
     table: 'fin_accounts',
     columns: ['id', 'name', 'type', 'group', 'icon', 'number', 'note', 'archived', 'opening', 'createdAt', 'updatedAt'],
+  },
+  'fin.categoryRows': {
+    table: 'fin_categories',
+    columns: ['id', 'type', 'name', 'emoji', 'hidden', 'sort', 'createdAt', 'updatedAt'],
+  },
+  'fin.budgetRows': {
+    table: 'fin_budgets',
+    columns: ['id', 'month', 'category', 'amount', 'createdAt', 'updatedAt'],
+  },
+  'fin.bills': {
+    table: 'fin_bills',
+    columns: ['id', 'name', 'icon', 'amount', 'category', 'accountId', 'dueDay', 'intervalMonths', 'startMonth', 'paid', 'note', 'archived', 'createdAt', 'updatedAt'],
   },
   'fin.transactions': {
     table: 'fin_transactions',
@@ -49,7 +65,11 @@ export const TABLES = {
 };
 
 /** Pengaturan yang disimpan di tabel app_settings. */
-export const SETTING_KEYS = ['inv.locations', 'inv.lastOpname', 'fin.budgets', 'inv.categories', 'fin.categories.expense', 'fin.categories.income', 'inv.locationIcons'];
+export const SETTING_KEYS = [
+  'inv.locations', 'inv.lastOpname', 'fin.budgets', 'inv.categories', 'fin.categories.expense', 'fin.categories.income', 'inv.locationIcons',
+  // penanda: data lama (pengaturan) sudah dipindah ke tabel baris (migrasi 010)
+  'app.migrated.locations', 'app.migrated.categories', 'app.migrated.budgets',
+];
 
 export const isConfigured = () => Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
@@ -66,7 +86,7 @@ export function toRow(key, obj) {
 }
 
 /** Nilai pengganti NULL dari database untuk kolom non-teks. */
-const EMPTY = { archived: false, accountIds: [], milestone: 0, items: [], days: [], doneDates: [], skipDates: [], ingredients: [], steps: [], tags: [], nutrition: {}, favorite: false };
+const EMPTY = { hidden: false, sort: 0, paid: {}, intervalMonths: 1, dueDay: 1, archived: false, accountIds: [], milestone: 0, items: [], days: [], doneDates: [], skipDates: [], ingredients: [], steps: [], tags: [], nutrition: {}, favorite: false };
 
 export function fromRow(key, row) {
   const out = {};

@@ -3,7 +3,7 @@
  * Semua logika data barang rumah: master barang, stok masuk/keluar,
  * stock opname, daftar belanja, dan pengelompokan per lokasi.
  */
-import { collection, load, save } from './storage.service.js';
+import { collection, load, save, migrateOnce } from './storage.service.js';
 import { today, daysUntil } from './format.service.js';
 
 const items = collection('inv.items');
@@ -30,18 +30,39 @@ export const getCategories = () => load('inv.categories', DEFAULT_CATEGORIES);
 export const getUnits = () => DEFAULT_UNITS;
 
 /* ---------- Lokasi penyimpanan (bisa diatur sendiri) ---------- */
-// Daftar nama disimpan di 'inv.locations' (array string, format lama tetap),
-// ikon per lokasi di 'inv.locationIcons' ({ nama: emoji }).
+// Satu baris per lokasi di koleksi 'inv.locationRows' (tabel inv_locations).
+// Data lama ('inv.locations' + 'inv.locationIcons' di pengaturan) dipindah otomatis sekali.
 
 const DEFAULT_LOCATION_ICONS = { Dapur: '🍳', Kulkas: '🧊', Freezer: '❄️', 'Lemari Makan': '🥫', 'Kamar Mandi': '🛁', Gudang: '📦', 'Kamar Tidur': '🛏️' };
 export const LOCATION_EMOJIS = [
   '🍳', '🧊', '❄️', '🥫', '🛁', '📦', '🛏️', '🛋️', '🚪', '🧺', '🧰', '🚗', '🌿', '👕', '💊', '🧸', '📚', '🏠',
 ];
 export const NO_LOCATION = 'Belum ditentukan';
+const MIGRATED = 'app.migrated.locations';
 
-const savedLocations = () => load('inv.locations', DEFAULT_LOCATIONS);
-const locationIcons = () => ({ ...DEFAULT_LOCATION_ICONS, ...load('inv.locationIcons', {}) });
+const locRows = collection('inv.locationRows');
 const sameName = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+const locId = (name) => `loc:${String(name).trim().toLowerCase()}`;
+const sortedRows = () => locRows.all().sort((a, b) => a.sort - b.sort || a.name.localeCompare(b.name));
+const useRows = () => locRows.all().length > 0 || load(MIGRATED, false);
+
+/** Data lama (sebelum pindah ke tabel). */
+const legacyNames = () => load('inv.locations', DEFAULT_LOCATIONS);
+const legacyIcons = () => ({ ...DEFAULT_LOCATION_ICONS, ...load('inv.locationIcons', {}) });
+
+/** Sebelum menulis: pastikan data lama sudah jadi baris. */
+function ensureRows() {
+  migrateOnce(MIGRATED, () => {
+    if (locRows.all().length) return;
+    const icons = legacyIcons();
+    legacyNames().forEach((name, sort) => locRows.add({ id: locId(name), name, icon: icons[name] || '', sort }));
+  });
+}
+
+const savedLocations = () => (useRows() ? sortedRows().map((r) => r.name) : legacyNames());
+const locationIcons = () =>
+  useRows() ? { ...DEFAULT_LOCATION_ICONS, ...Object.fromEntries(locRows.all().filter((r) => r.icon).map((r) => [r.name, r.icon])) } : legacyIcons();
+const rowOf = (name) => locRows.find((r) => r.name === name);
 
 /** Semua lokasi sesuai urutan yang diatur user (+ lokasi yang terlanjur dipakai barang). */
 export function getLocations() {
@@ -53,10 +74,18 @@ export function getLocations() {
 export const locationEmoji = (name) => (name === NO_LOCATION ? '❔' : locationIcons()[name] || '📍');
 export const locationItemCount = (name) => items.filter((i) => (i.location || NO_LOCATION) === name).length;
 
+/** Tambah baris lokasi di urutan paling akhir (tanpa validasi). */
+function addRow(name, icon = '') {
+  const max = Math.max(-1, ...locRows.all().map((r) => r.sort));
+  const id = locRows.get(locId(name)) ? `${locId(name)}-${Date.now().toString(36)}` : locId(name);
+  return locRows.add({ id, name, icon, sort: max + 1 });
+}
+
 /** Dipakai saat input barang: lokasi baru otomatis masuk daftar (tanpa validasi). */
 export function ensureLocation(name) {
-  const list = savedLocations();
-  if (name && !list.some((l) => sameName(l, name))) save('inv.locations', [...list, name]);
+  if (!name) return;
+  ensureRows();
+  if (!locRows.all().some((r) => sameName(r.name, name))) addRow(name);
 }
 
 export function addLocation(name, emoji) {
@@ -64,8 +93,14 @@ export function addLocation(name, emoji) {
   if (!clean) throw new Error('Nama lokasi wajib diisi');
   if (sameName(clean, NO_LOCATION)) throw new Error('Nama ini dipakai sistem');
   if (getLocations().some((l) => sameName(l, clean))) throw new Error(`Lokasi "${clean}" sudah ada`);
-  save('inv.locations', [...getLocations(), clean]);
-  if (emoji) save('inv.locationIcons', { ...load('inv.locationIcons', {}), [clean]: emoji });
+  ensureRows();
+  syncUsedLocations();
+  addRow(clean, emoji || '');
+}
+
+/** Lokasi yang dipakai barang tapi belum ada di daftar → dijadikan baris (supaya urutannya bisa diatur). */
+function syncUsedLocations() {
+  getLocations().forEach((n) => !rowOf(n) && addRow(n));
 }
 
 /** Ganti nama / ikon. Ganti nama → semua barang di lokasi itu ikut pindah. */
@@ -74,19 +109,21 @@ export function updateLocation(oldName, { name, emoji }) {
   const list = getLocations();
   const idx = list.indexOf(oldName);
   if (idx < 0) throw new Error('Lokasi tidak ditemukan');
-  const icons = load('inv.locationIcons', {});
   if (newName !== oldName) {
     if (sameName(newName, NO_LOCATION)) throw new Error('Nama ini dipakai sistem');
     if (list.some((l, i) => i !== idx && sameName(l, newName))) throw new Error(`Lokasi "${newName}" sudah ada`);
-    items.filter((i) => i.location === oldName).forEach((i) => items.update(i.id, { location: newName }));
-    list[idx] = newName;
-    save('inv.locations', list);
-    icons[newName] = emoji || locationIcons()[oldName] || '📍';
-    delete icons[oldName];
-  } else if (emoji) {
-    icons[oldName] = emoji;
   }
-  save('inv.locationIcons', icons);
+  ensureRows();
+  syncUsedLocations();
+  const row = rowOf(oldName);
+  const patch = {};
+  if (newName !== oldName) {
+    items.filter((i) => i.location === oldName).forEach((i) => items.update(i.id, { location: newName }));
+    patch.name = newName;
+    if (!emoji && !row.icon) patch.icon = locationIcons()[oldName] || '';
+  }
+  if (emoji) patch.icon = emoji;
+  if (Object.keys(patch).length) locRows.update(row.id, patch);
 }
 
 /** Hapus lokasi. Bila masih ada barang: wajib pilih lokasi tujuan (`moveTo`). */
@@ -94,14 +131,10 @@ export function deleteLocation(name, moveTo) {
   const inside = items.filter((i) => i.location === name);
   if (inside.length && !moveTo) throw new Error(`Masih ada ${inside.length} barang di ${name}. Pilih lokasi tujuan dulu.`);
   if (moveTo === name) throw new Error('Lokasi tujuan harus berbeda');
+  ensureRows();
   inside.forEach((i) => items.update(i.id, { location: moveTo === NO_LOCATION ? '' : moveTo }));
   if (moveTo && moveTo !== NO_LOCATION) ensureLocation(moveTo);
-  save('inv.locations', getLocations().filter((l) => l !== name));
-  const icons = load('inv.locationIcons', {});
-  if (name in icons) {
-    delete icons[name];
-    save('inv.locationIcons', icons);
-  }
+  locRows.filter((r) => r.name === name).forEach((r) => locRows.remove(r.id));
   return inside.length;
 }
 
@@ -111,7 +144,13 @@ export function moveLocation(name, dir) {
   const j = i + dir;
   if (i < 0 || j < 0 || j >= list.length) return;
   [list[i], list[j]] = [list[j], list[i]];
-  save('inv.locations', list);
+  ensureRows();
+  syncUsedLocations();
+  // hanya baris yang urutannya berubah yang dikirim
+  list.forEach((n, sort) => {
+    const row = rowOf(n);
+    if (row && row.sort !== sort) locRows.update(row.id, { sort });
+  });
 }
 
 export function categoryInfo(name) {

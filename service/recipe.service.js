@@ -187,3 +187,56 @@ export function mealPlan(days = 7, from = today()) {
 
 export const schedulesFor = (recipeId, days = 30) =>
   mealPlan(days).flatMap((d) => d.meals.filter((m) => m.recipeId === recipeId).map((m) => ({ ...m, date: d.date })));
+
+/* ---------- Belanja mingguan dari rencana menu ---------- */
+
+/** Satuan bahan resep → satuan barang (kg ↔ gram, liter ↔ ml) supaya bisa dibandingkan dengan stok. */
+const UNIT_BASE = { g: ['g', 1], gr: ['g', 1], gram: ['g', 1], kg: ['g', 1000], ml: ['ml', 1], l: ['ml', 1000], liter: ['ml', 1000] };
+
+/**
+ * Kumpulkan bahan semua masakan yang dijadwalkan `days` hari ke depan (yang belum dimasak).
+ * Hasil: { meals, buy: [...], untracked: [...], ok: [...] }
+ *  - buy       : barang di Inventory yang stoknya habis / menipis / kurang dari kebutuhan
+ *  - untracked : bahan yang belum ada di Inventory
+ *  - ok        : stok cukup
+ */
+export function weeklyShopping(days = 7, from = today()) {
+  const meals = mealPlan(days, from).flatMap((d) => d.meals.filter((m) => !m.done).map((m) => ({ ...m, date: d.date })));
+  const groups = new Map();
+  meals.forEach((meal) =>
+    (meal.recipe.ingredients || []).forEach((ing) => {
+      const item = matchItem(ing.name);
+      const key = item ? `item:${item.id}` : `name:${ing.name.trim().toLowerCase()}`;
+      if (!groups.has(key)) groups.set(key, { key, name: item ? item.name : ing.name, item, amounts: {}, recipes: new Set() });
+      const g = groups.get(key);
+      g.recipes.add(meal.recipe.name);
+      if (ing.qty > 0 && ing.unit !== 'secukupnya') {
+        const [unit, mult] = UNIT_BASE[ing.unit] || [ing.unit || 'pcs', 1];
+        g.amounts[unit] = (g.amounts[unit] || 0) + ing.qty * mult;
+      }
+    })
+  );
+
+  const buy = [];
+  const untracked = [];
+  const ok = [];
+  groups.forEach((g) => {
+    const out = { ...g, recipes: [...g.recipes], need: Object.entries(g.amounts).map(([unit, qty]) => ({ unit, qty })) };
+    if (!g.item) return untracked.push(out);
+    // kebutuhan dibandingkan dengan stok bila satuannya bisa disamakan
+    const [stockUnit, mult] = UNIT_BASE[(g.item.unit || '').toLowerCase()] || [(g.item.unit || '').toLowerCase(), 1];
+    const needSame = g.amounts[stockUnit];
+    const stock = g.item.qty * mult;
+    out.short = needSame != null && needSame > stock ? Math.ceil((needSame - stock) / mult) : 0;
+    out.status = g.item.qty <= 0 ? 'out' : g.item.minStock > 0 && g.item.qty < g.item.minStock ? 'low' : out.short > 0 ? 'short' : 'ok';
+    // jumlah beli yang disarankan (dalam satuan barang)
+    out.suggest = Math.max(1, out.short, g.item.minStock > g.item.qty ? g.item.minStock - g.item.qty : 0);
+    (out.status === 'ok' ? ok : buy).push(out);
+  });
+  const byName = (a, b) => a.name.localeCompare(b.name);
+  return { meals, buy: buy.sort(byName), untracked: untracked.sort(byName), ok: ok.sort(byName) };
+}
+
+/** Teks kebutuhan: "750 g + 3 butir" */
+export const needText = (need) =>
+  need.map(({ unit, qty }) => (unit === 'g' && qty >= 1000 ? `${fmtQty(qty / 1000)} kg` : unit === 'ml' && qty >= 1000 ? `${fmtQty(qty / 1000)} liter` : `${fmtQty(qty)} ${unit}`)).join(' + ');

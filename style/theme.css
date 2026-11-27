@@ -52,9 +52,69 @@
   --shadow-pop: 0 10px 30px rgba(43, 43, 43, 0.16);
   --overlay: rgba(43, 43, 43, 0.4);
 
+  /* Permukaan transparan di atas warna menu & teks di atas warna aksen */
+  --glass: rgba(255, 255, 255, 0.45);
+  --glass-strong: rgba(255, 255, 255, 0.7);
+  --tabbar-bg: rgba(255, 255, 255, 0.92);
+  --line-strong: #cfcabf;
+  --on-accent: #ffffff;
+  color-scheme: light;
+
   --font: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --tabbar-h: 68px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ============================================================
+   MODE GELAP — Sage & Pasir versi malam (bukan sekadar dibalik):
+   latar arang hangat, aksen sage lebih terang dengan teks gelap
+   di atasnya supaya kontras tetap nyaman dibaca.
+   Aktif lewat atribut <html data-theme="dark"> (service/theme.service.js).
+   ============================================================ */
+:root[data-theme='dark'] {
+  --bg: #1b1d1b;
+  --surface: #252826;
+  --surface-soft: #2b2e2c;
+  --ink: #e9e7e1;
+  --muted: #9da09b;
+  --line: #3a3e3b;
+  --tile: #2f3330;
+
+  --accent: #8fb59a;
+  --accent-ink: #a9c9b2;
+  --accent-soft: #2d3a31;
+  --accent-shadow: rgba(0, 0, 0, 0.35);
+
+  --dark-1: #3e5747;
+  --dark-2: #587463;
+
+  --ok: #8fbf9c;
+  --ok-soft: #2b3a30;
+  --warn: #e0a84a;
+  --warn-ink: #e8b862;
+  --warn-soft: #3d3222;
+  --danger: #e38b78;
+  --danger-soft: #43292a;
+  --pos: #8fbf9c;
+  --neg: #e38b78;
+
+  --mint-bg: #26332b;     --mint: #9cc0a8;
+  --peach-bg: #352d24;    --peach: #d6b38c;
+  --sky-bg: #232d36;      --sky: #93b4cf;
+  --lavender-bg: #2a2f2b; --lavender: #a9c4b0;
+  --butter-bg: #33311f;   --butter: #d0c283;
+  --rose-bg: #382a26;     --rose: #dc9f90;
+
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 10px 30px rgba(0, 0, 0, 0.55);
+  --overlay: rgba(0, 0, 0, 0.6);
+
+  --glass: rgba(255, 255, 255, 0.06);
+  --glass-strong: rgba(255, 255, 255, 0.08);
+  --tabbar-bg: rgba(37, 40, 38, 0.94);
+  --line-strong: #4a4f4b;
+  --on-accent: #132017;
+  color-scheme: dark;
 }
 
 /* Kelas tone: mengisi variabel --t-bg / --t-ink yang dipakai komponen */

@@ -11,6 +11,8 @@ import { initData, needsLogin } from './service/sync.service.js';
 import { isUserBusy } from './service/ui.service.js';
 import { enableAutoUpdate } from './service/update.service.js';
 import { canPath, MENUS, can } from './service/access.service.js';
+import { startNotifications } from './service/notification.service.js';
+import './service/theme.service.js'; // tema terang / gelap
 
 // Login, beranda & pengaturan
 import login from './program/login.js';
@@ -36,6 +38,7 @@ import kegiatan from './program/activity/kegiatan.js';
 import resep from './program/recipe/resep.js';
 import resepForm from './program/recipe/resep-form.js';
 import resepDetail from './program/recipe/resep-detail.js';
+import belanjaMingguan from './program/recipe/belanja-mingguan.js';
 
 // Menu Utama Financial Rumah
 import financeMenu from './program/finance/finance-menu.js';
@@ -50,13 +53,14 @@ import transfer from './program/finance/transfer.js';
 import targetTabungan from './program/finance/target-tabungan.js';
 import kategori from './program/finance/kategori.js';
 import tren from './program/finance/tren.js';
+import tagihan from './program/finance/tagihan.js';
 
 const MODULES = [
   login, home, settings, configure,
   kegiatan,
-  resep, resepForm, resepDetail,
+  resep, resepForm, resepDetail, belanjaMingguan,
   inventoryMenu, inputBarang, stockKeluar, stockOpname, daftarBelanja, modeBelanja, riwayatBelanja, barangLokasi, lokasiAtur,
-  financeMenu, inputIncome, inputExpense, laporanPengeluaran, laporanPemasukan, neracaLabaRugi, budget, akun, transfer, targetTabungan, kategori, tren,
+  financeMenu, inputIncome, inputExpense, laporanPengeluaran, laporanPemasukan, neracaLabaRugi, budget, akun, transfer, targetTabungan, kategori, tren, tagihan,
 ];
 
 /** Tandai tab navigasi bawah yang aktif sesuai halaman. */
@@ -88,3 +92,6 @@ router.start();
 
 // Mode offline + update otomatis ke versi terbaru
 enableAutoUpdate();
+
+// Pengingat (tagihan, kegiatan, kedaluwarsa, stok) — bila diaktifkan di Settings
+startNotifications();

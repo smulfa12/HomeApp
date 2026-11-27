@@ -27,7 +27,7 @@
   width: 140px;
   height: 140px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.45);
+  background: var(--glass);
 }
 .big-card__top { display: flex; align-items: center; gap: 14px; position: relative; }
 .big-card__top > div { flex: 1; }
@@ -45,7 +45,7 @@
 }
 .big-card__arrow { font-size: 28px; font-weight: 800; color: var(--t-ink); }
 .big-card__stats { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; position: relative; }
-.big-card__stats > div { background: rgba(255, 255, 255, 0.7); border-radius: 14px; padding: 10px 12px; }
+.big-card__stats > div { background: var(--glass-strong); border-radius: 14px; padding: 10px 12px; }
 .big-card__stats strong { display: block; font-size: 17px; font-weight: 900; color: var(--t-ink); }
 .big-card__stats small { font-size: 11.5px; font-weight: 700; color: var(--muted); }
 
@@ -231,7 +231,7 @@
   transition: all 0.2s;
 }
 .check--on { background: var(--rose); }
-.check--on::after { content: '✓'; color: #fff; font-weight: 900; }
+.check--on::after { content: '✓'; color: var(--on-accent); font-weight: 900; }
 .buy-qty { text-align: center; background: var(--rose-bg); border-radius: 12px; padding: 4px 10px; min-width: 58px; }
 .buy-qty strong { display: block; font-size: 18px; font-weight: 900; color: var(--rose); line-height: 1.1; }
 .buy-qty small { font-size: 10px; color: var(--muted); font-weight: 700; display: block; }
@@ -344,7 +344,7 @@ a.setting-row { color: inherit; }
   margin: -6px 0;
   border-radius: 50%;
   background: var(--sky);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 20px;
   font-weight: 900;
   box-shadow: 0 4px 12px var(--accent-shadow);
@@ -422,7 +422,7 @@ a.setting-row { color: inherit; }
 .acc-check__box { flex: none; width: 22px; height: 22px; border-radius: 7px; border: 2.5px solid var(--rose); display: grid; place-items: center; }
 .acc-check__row:has(input:checked) { background: var(--rose-bg); border-color: var(--rose); }
 .acc-check__row:has(input:checked) .acc-check__box { background: var(--rose); }
-.acc-check__row:has(input:checked) .acc-check__box::after { content: '✓'; color: #fff; font-weight: 900; font-size: 13px; }
+.acc-check__row:has(input:checked) .acc-check__box::after { content: '✓'; color: var(--on-accent); font-weight: 900; font-size: 13px; }
 .acc-check__row:has(input:focus-visible) { outline: 3px solid var(--lavender); }
 .acc-check__icon { font-size: 18px; }
 .acc-check__warn { display: block; color: var(--warn-ink); font-size: 11px; }
@@ -492,7 +492,7 @@ a.setting-row { color: inherit; }
 .week__day b { font-size: 16px; font-weight: 900; }
 .week__day.today b { color: var(--accent); }
 .week__day.on { background: var(--accent); }
-.week__day.on small, .week__day.on b { color: #fff; }
+.week__day.on small, .week__day.on b { color: var(--on-accent); }
 .week__dot { width: 6px; height: 6px; border-radius: 50%; background: transparent; }
 .week__dot--none { background: var(--line); }
 .week__dot--part { background: var(--warn); }
@@ -516,7 +516,7 @@ a.setting-row { color: inherit; }
   transition: background 0.15s;
 }
 .todo--done .todo__check { background: var(--accent); }
-.todo--done .todo__check::after { content: '✓'; color: #fff; font-weight: 900; font-size: 14px; }
+.todo--done .todo__check::after { content: '✓'; color: var(--on-accent); font-weight: 900; font-size: 14px; }
 .todo__time { flex: none; width: 52px; font-weight: 900; font-size: 14px; line-height: 1.2; padding-top: 5px; }
 .todo__time small { display: block; font-size: 11px; font-weight: 700; color: var(--muted); }
 .todo__body { flex: 1; min-width: 0; cursor: pointer; padding-top: 3px; }
@@ -616,6 +616,34 @@ a.setting-row { color: inherit; }
 .trend-table li > span { display: flex; flex-direction: column; min-width: 0; font-weight: 700; }
 .trend-table li > span.right { align-items: flex-end; gap: 3px; flex: none; }
 .trend-table small { color: var(--muted); font-weight: 600; font-size: 12px; }
-.mover-list .link-row { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 8px; text-align: left; font-weight: 700; font-size: 14px; padding: 2px 0; }
-.mover-list .link-row > span { display: flex; flex-direction: column; min-width: 0; }
+.link-row { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 8px; text-align: left; font-weight: 700; font-size: 14px; padding: 2px 0; }
+.link-row > span { display: flex; flex-direction: column; min-width: 0; }
+.link-row > span:last-child { flex: none; }
+.link-row small { color: var(--muted); font-weight: 600; font-size: 12px; }
 .mover-list small { color: var(--muted); font-weight: 600; font-size: 12px; }
+
+/* ---------- Bills (tagihan rutin) ---------- */
+.text-ok { color: var(--ok); }
+.text-warn { color: var(--warn-ink); }
+.text-danger { color: var(--danger); }
+.text-info { color: var(--muted); }
+.card--alert { border: 1.5px solid var(--danger-soft); }
+.bill-list { list-style: none; margin: 0; padding: 0; }
+.bill-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px dashed var(--line); cursor: default; }
+.bill-row:last-child { border-bottom: 0; }
+.bill-row__icon { width: 40px; height: 40px; border-radius: 13px; background: var(--butter-bg); display: grid; place-items: center; font-size: 20px; flex: none; }
+.bill-row__main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.bill-row__main b { font-size: 14.5px; overflow-wrap: anywhere; }
+.bill-row__main small { font-size: 12px; font-weight: 700; }
+.bill-row__side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex: none; }
+.bill-row__side b { font-size: 14px; }
+
+/* ---------- Weekly Shopping ---------- */
+.weekly-list { list-style: none; margin: 0; padding: 0; }
+.weekly-list li { border-bottom: 1px dashed var(--line); }
+.weekly-list li:last-child { border-bottom: 0; }
+.weekly-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; cursor: pointer; }
+.weekly-row input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+.weekly-row__main { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: 14px; }
+.weekly-row__main small, .weekly-row__side small { color: var(--muted); font-size: 12px; font-weight: 600; }
+.weekly-row__side { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex: none; text-align: right; }
